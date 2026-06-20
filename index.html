@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>My Business</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
     --bg:#f4f1ea; --bg2:#ece7dc; --card:#ffffff; --line:#e6e0d3;
@@ -16,6 +17,10 @@
   header { margin-bottom:16px; }
   .title-row { display:flex; align-items:center; gap:10px; }
   .basket { width:42px; height:42px; flex-shrink:0; border-radius:13px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(200,84,30,.28); }
+  .sync-badge { width:38px; height:38px; flex-shrink:0; border-radius:11px; background:var(--card); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; font-size:18px; transition:.2s; }
+  .sync-badge.saving { animation:pulse 1s ease infinite; }
+  .sync-badge.error { background:#fde8e4; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   h1 { font-size:23px; font-weight:800; letter-spacing:-0.6px; line-height:1.05; }
   .date { font-size:13px; color:var(--muted); font-weight:600; }
 
@@ -329,7 +334,8 @@
   <header>
     <div class="title-row">
       <div class="basket">🧺</div>
-      <div><h1>My Business</h1><span class="date" id="today"></span></div>
+      <div style="flex:1"><h1>My Business</h1><span class="date" id="today"></span></div>
+      <div class="sync-badge" id="syncBadge" title="Синхронизация">☁️</div>
     </div>
   </header>
 
@@ -540,6 +546,92 @@
   </div>
 
 <script>
+  // ===== Облако (Supabase) =====
+  const SUPA_URL='https://aozmnrvdskcgkkpvcirk.supabase.co';
+  const SUPA_KEY='sb_publishable_HukLaSRWjBH3CjhrQTGf2A_raw_xybO';
+  // user_id: из Telegram если есть, иначе устройство (чтобы и в браузере работало)
+  let cloudUserId='';
+  (function(){
+    try{
+      const tg=window.Telegram&&window.Telegram.WebApp;
+      if(tg){ tg.ready&&tg.ready(); tg.expand&&tg.expand();
+        const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
+        if(u&&u.id) cloudUserId='tg_'+u.id;
+      }
+    }catch(e){}
+    if(!cloudUserId){
+      let dev=localStorage.getItem('bazar_device_id');
+      if(!dev){ dev='dev_'+Date.now()+''+Math.floor(Math.random()*99999); localStorage.setItem('bazar_device_id',dev); }
+      cloudUserId=dev;
+    }
+  })();
+
+  let cloudSaveTimer=null, cloudReady=false;
+  function setSync(state){
+    const b=document.getElementById('syncBadge'); if(!b)return;
+    b.classList.remove('saving','error');
+    if(state==='saving'){ b.classList.add('saving'); b.textContent='☁️'; }
+    else if(state==='ok'){ b.textContent='✅'; setTimeout(()=>{ if(b.textContent==='✅')b.textContent='☁️'; },1500); }
+    else if(state==='error'){ b.classList.add('error'); b.textContent='⚠️'; }
+    else b.textContent='☁️';
+  }
+  function collectData(){
+    return { catalog, hist, sections, plan, revenue, expenses, v:7 };
+  }
+  function applyData(d){
+    if(!d)return;
+    if(Array.isArray(d.catalog))catalog=d.catalog;
+    if(Array.isArray(d.hist))hist=d.hist;
+    if(Array.isArray(d.sections)&&d.sections.length)sections=d.sections;
+    if(Array.isArray(d.plan))plan=d.plan;
+    if(Array.isArray(d.revenue))revenue=d.revenue;
+    if(Array.isArray(d.expenses))expenses=d.expenses;
+    const fb=sections[0]?sections[0].name:'Продукты';
+    catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
+  }
+  // загрузка из облака при старте
+  async function cloudLoad(){
+    try{
+      const r=await fetch(`${SUPA_URL}/rest/v1/app_data?user_id=eq.${encodeURIComponent(cloudUserId)}&select=data`,{
+        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
+      });
+      if(!r.ok)throw new Error('load '+r.status);
+      const rows=await r.json();
+      if(rows&&rows.length&&rows[0].data){
+        applyData(rows[0].data);
+        // обновим локальный кэш
+        saveCat&&saveCat(); saveQty&&saveQty(); saveHist&&saveHist(); savePlan&&savePlan(); saveSections&&saveSections(); saveRevenue&&saveRevenue(); saveExpenses&&saveExpenses();
+      } else {
+        // в облаке пусто — зальём текущие локальные данные
+        await cloudPush();
+      }
+      cloudReady=true; setSync('ok');
+      // перерисуем всё
+      fillCatSelect&&fillCatSelect(); renderBuy&&renderBuy(); renderCat&&renderCat(); renderHist&&renderHist();
+    }catch(e){ cloudReady=true; setSync('error'); }
+  }
+  // отправка в облако
+  async function cloudPush(){
+    setSync('saving');
+    try{
+      const body=JSON.stringify({ user_id:cloudUserId, data:collectData(), updated_at:new Date().toISOString() });
+      const r=await fetch(`${SUPA_URL}/rest/v1/app_data?on_conflict=user_id`,{
+        method:'POST',
+        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
+        body
+      });
+      if(!r.ok)throw new Error('push '+r.status);
+      setSync('ok');
+    }catch(e){ setSync('error'); }
+  }
+  // отложенное сохранение (вызывается после любого изменения)
+  function cloudSync(){
+    if(!cloudReady)return;
+    clearTimeout(cloudSaveTimer);
+    setSync('saving');
+    cloudSaveTimer=setTimeout(cloudPush,800);
+  }
+
   const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
   // разделы по умолчанию
@@ -547,7 +639,7 @@
   let sections=[];
   try { sections=JSON.parse(localStorage.getItem(SKEY))||[]; } catch(e){}
   if(!Array.isArray(sections)||sections.length===0) sections=DEFAULT_SECTIONS.map(s=>({...s}));
-  function saveSections(){ try{localStorage.setItem(SKEY,JSON.stringify(sections));}catch(e){} }
+  function saveSections(){ try{localStorage.setItem(SKEY,JSON.stringify(sections));}catch(e){} cloudSync(); }
   // динамические геттеры взамен старых констант
   function CATS_LIST(){ return sections.map(s=>s.name); }
   function META(cat){ const s=sections.find(x=>x.name===cat); return s?{icon:s.icon,color:s.color}:{icon:'📦',color:'#888'}; }
@@ -569,10 +661,10 @@
 
   const $=id=>document.getElementById(id);
   const fmt=n=>Number(n).toLocaleString('ru-RU');
-  function saveCat(){ try{localStorage.setItem(KEY,JSON.stringify(catalog));}catch(e){} }
-  function saveQty(){ try{localStorage.setItem(QKEY,JSON.stringify(qty));}catch(e){} }
-  function saveHist(){ try{localStorage.setItem(HKEY,JSON.stringify(hist));}catch(e){} }
-  function savePlan(){ try{localStorage.setItem(PKEY,JSON.stringify(plan));}catch(e){} }
+  function saveCat(){ try{localStorage.setItem(KEY,JSON.stringify(catalog));}catch(e){} cloudSync(); }
+  function saveQty(){ try{localStorage.setItem(QKEY,JSON.stringify(qty));}catch(e){} cloudSync(); }
+  function saveHist(){ try{localStorage.setItem(HKEY,JSON.stringify(hist));}catch(e){} cloudSync(); }
+  function savePlan(){ try{localStorage.setItem(PKEY,JSON.stringify(plan));}catch(e){} cloudSync(); }
   function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function total(){ return catalog.reduce((s,it)=>s+it.price*(qty[it.id]||0),0); }
   function plural(n){ return n===1?'товар':(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?'товара':'товаров'; }
@@ -1223,8 +1315,8 @@
 
   // ===== Касса (выручка, расходы, прибыль) =====
   let cashPeriod=1, cashMode='rev';
-  function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} }
-  function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} }
+  function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} cloudSync(); }
+  function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} cloudSync(); }
   function periodCutoff(months){ if(months<=0)return null; const c=new Date(); c.setMonth(c.getMonth()-months+1); c.setDate(1); c.setHours(0,0,0,0); return c; }
   function renderCash(){
     const cut=periodCutoff(cashPeriod);
@@ -1427,6 +1519,8 @@
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist();
+  // загрузка данных из облака (после первого рендера локального кэша)
+  cloudLoad();
 </script>
 </body>
 </html>
