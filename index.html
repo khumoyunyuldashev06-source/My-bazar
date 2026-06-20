@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Закупка на базаре</title>
+<title>My Business</title>
 <style>
   :root {
     --bg:#f4f1ea; --bg2:#ece7dc; --card:#ffffff; --line:#e6e0d3;
@@ -12,16 +12,26 @@
     --shadow:0 1px 2px rgba(43,37,32,.05),0 8px 24px rgba(43,37,32,.06);
   }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  body { font-family:-apple-system,"SF Pro Text",system-ui,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; padding:18px 18px 110px; max-width:560px; margin:0 auto; }
+  body { font-family:-apple-system,"SF Pro Text",system-ui,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; padding:18px 18px calc(90px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; }
   header { margin-bottom:16px; }
   .title-row { display:flex; align-items:center; gap:10px; }
   .basket { width:42px; height:42px; flex-shrink:0; border-radius:13px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(200,84,30,.28); }
   h1 { font-size:23px; font-weight:800; letter-spacing:-0.6px; line-height:1.05; }
   .date { font-size:13px; color:var(--muted); font-weight:600; }
 
-  .tabs { display:flex; gap:4px; background:var(--bg2); border-radius:14px; padding:4px; margin:16px 0; box-shadow:inset 0 1px 2px rgba(43,37,32,.04); }
-  .tabs button { flex:1; background:transparent; border:none; color:var(--muted); font-size:12px; font-weight:700; padding:10px 2px; border-radius:10px; cursor:pointer; transition:.18s; font-family:inherit; }
-  .tabs button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow); }
+  .bottom-nav { position:fixed; bottom:calc(10px + env(safe-area-inset-bottom)); left:12px; right:12px; max-width:536px; margin:0 auto; display:flex; padding:8px 6px; z-index:40;
+    background:linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.55));
+    backdrop-filter:blur(28px) saturate(1.7); -webkit-backdrop-filter:blur(28px) saturate(1.7);
+    border-radius:30px; border:1px solid rgba(255,255,255,.65);
+    box-shadow:0 8px 32px rgba(43,37,32,.16), 0 2px 8px rgba(43,37,32,.08), inset 0 1px 1px rgba(255,255,255,.9), inset 0 -1px 2px rgba(255,255,255,.3);
+  }
+  .bottom-nav::before { content:""; position:absolute; inset:0; border-radius:30px; padding:1px; background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,0) 40%); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+  .bottom-nav button { flex:1; background:transparent; border:none; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; cursor:pointer; font-family:inherit; border-radius:18px; transition:.18s; position:relative; }
+  .bottom-nav .bn-ic { font-size:21px; line-height:1; filter:grayscale(.5); opacity:.5; transition:.18s; }
+  .bottom-nav .bn-lb { font-size:10px; font-weight:700; color:var(--muted); transition:.18s; }
+  .bottom-nav button.active { background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.5)); box-shadow:0 2px 8px rgba(200,84,30,.18), inset 0 1px 1px rgba(255,255,255,.9); }
+  .bottom-nav button.active .bn-ic { filter:none; opacity:1; transform:translateY(-1px) scale(1.08); }
+  .bottom-nav button.active .bn-lb { color:var(--accent); }
 
   .total-card { background:linear-gradient(160deg,#2b2520,#3a322a); color:#fff; border-radius:22px; padding:22px 24px; margin-bottom:18px; box-shadow:0 12px 32px rgba(43,37,32,.22); position:relative; overflow:hidden; }
   .total-card::after { content:""; position:absolute; top:-40px; right:-30px; width:160px; height:160px; background:radial-gradient(circle,rgba(200,84,30,.35),transparent 70%); pointer-events:none; }
@@ -173,6 +183,14 @@
   .mc-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:6px; min-width:0; }
   .mc-bar-val { font-size:11px; font-weight:700; color:var(--ink); white-space:nowrap; }
   .mc-bar2 { width:100%; max-width:46px; background:linear-gradient(180deg,#e07b3a,#c8541e); border-radius:8px 8px 0 0; min-height:4px; transition:height .5s ease; }
+  .mc-pair { display:flex; align-items:flex-end; gap:3px; width:100%; height:100%; justify-content:center; }
+  .mc-pair .mc-bar2 { max-width:20px; }
+  .mc-bar-rev { width:20px; background:linear-gradient(180deg,#5fe0a3,#2fb877); border-radius:8px 8px 0 0; min-height:4px; transition:height .5s ease; }
+  .mp-legend { display:flex; gap:14px; margin-bottom:8px; flex-wrap:wrap; }
+  .mp-i { font-size:12px; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:5px; }
+  .mp-dot { width:9px; height:9px; border-radius:3px; }
+  .mp-profit { font-size:16px; font-weight:800; color:var(--green); margin-bottom:10px; }
+  .mp-profit.neg { color:var(--red); }
   .mc-lab { font-size:11px; color:var(--muted); font-weight:600; }
   .bubble-area { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; min-height:120px; padding:10px 0; }
   .bubble { border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px; flex-shrink:0; box-shadow:0 6px 16px rgba(0,0,0,.12); }
@@ -186,7 +204,38 @@
   /* Планы */
   .plan-card { background:linear-gradient(160deg,#2b3a4a,#28323f); color:#fff; border-radius:20px; padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow); }
   .plan-l { font-size:12px; color:#9db3c4; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; }
-  .plan-v { font-size:30px; font-weight:800; margin-top:4px; letter-spacing:-0.5px; }
+  /* Касса */
+  .cash-card { background:linear-gradient(160deg,#1d3a2c,#1a2f26); color:#fff; border-radius:20px; padding:20px 22px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .cash-l { font-size:12px; color:#8fc7a8; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; }
+  .cash-v { font-size:36px; font-weight:800; margin-top:4px; letter-spacing:-1px; }
+  .cash-v span { font-size:18px; font-weight:600; color:#6fcf9a; margin-left:3px; }
+  .cash-v.neg { color:#ff9b85; } .cash-v.neg span { color:#ff9b85; }
+  .cash-breakdown { margin-top:16px; display:flex; flex-direction:column; gap:9px; }
+  .cb-item { display:flex; align-items:center; gap:9px; font-size:14px; }
+  .cb-dot { width:10px; height:10px; border-radius:3px; }
+  .cb-name { color:#cfe3d8; font-weight:600; }
+  .cb-val { margin-left:auto; font-weight:800; }
+  #revDate { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:15px; padding:13px 12px; outline:none; font-family:inherit; }
+  #revAmount { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #revDate:focus, #revAmount:focus { border-color:var(--accent); background:#fff; }
+  .rev-item { background:var(--card); border-radius:14px; padding:13px 16px; display:flex; align-items:center; gap:11px; box-shadow:var(--shadow); }
+  .rev-date { width:50px; height:50px; flex-shrink:0; border-radius:12px; background:#e3f3e8; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .rev-d { font-size:18px; font-weight:800; color:var(--green); line-height:1; }
+  .rev-m { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+  .rev-info { flex:1; }
+  .rev-amt { font-size:17px; font-weight:800; color:var(--green); }
+  .rev-lbl { font-size:12px; color:var(--muted); font-weight:600; margin-top:1px; }
+  .rev-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; flex-shrink:0; }
+  #expNote, #expDate, #expAmount { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #expDate { font-size:15px; padding:13px 12px; }
+  #expNote:focus, #expDate:focus, #expAmount:focus { border-color:var(--accent); background:#fff; }
+  .exp-item { background:var(--card); border-radius:14px; padding:13px 16px; display:flex; align-items:center; gap:11px; box-shadow:var(--shadow); }
+  .exp-ic { width:40px; height:40px; flex-shrink:0; border-radius:11px; background:#fbe5d8; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .exp-info { flex:1; min-width:0; }
+  .exp-note { font-size:15px; font-weight:700; }
+  .exp-meta { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
+  .exp-amt { font-weight:800; color:var(--accent); font-size:15px; white-space:nowrap; }
+  .exp-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; flex-shrink:0; }
   .plan-s { font-size:13px; color:#9db3c4; margin-top:5px; font-weight:500; }
   .plan-tobuy { margin-top:14px; width:100%; background:rgba(255,255,255,.16); color:#fff; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
   .plan-tobuy:active { background:rgba(255,255,255,.3); }
@@ -195,6 +244,20 @@
   .plan-tabs button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow); }
   #planSelect, #planNoteInput, #planQty { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
   #planSelect:focus, #planNoteInput:focus, #planQty:focus { border-color:var(--accent); background:#fff; }
+  .plan-search-wrap { position:relative; }
+  #planSearchInput { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #planSearchInput:focus { border-color:var(--accent); background:#fff; }
+  .plan-results { position:absolute; top:100%; left:0; right:0; margin-top:5px; background:var(--card); border-radius:13px; box-shadow:0 12px 30px rgba(43,37,32,.18); max-height:260px; overflow-y:auto; z-index:20; display:none; }
+  .plan-results.show { display:block; }
+  .plan-res-item { padding:12px 15px; font-size:15px; cursor:pointer; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:9px; }
+  .plan-res-item:last-child { border-bottom:none; }
+  .plan-res-item:active { background:var(--bg); }
+  .plan-res-ic { font-size:16px; }
+  .plan-res-name { font-weight:700; flex:1; }
+  .plan-res-price { font-size:13px; color:var(--muted); font-weight:600; }
+  .plan-res-empty { padding:14px 15px; color:var(--muted); font-size:14px; text-align:center; }
+  .plan-picked { background:var(--soft); border:1.5px solid var(--accent); border-radius:12px; padding:12px 15px; display:flex; align-items:center; gap:9px; font-weight:700; }
+  .plan-picked .pp-x { margin-left:auto; background:none; border:none; color:var(--red); font-size:18px; cursor:pointer; }
   #planNoteInput { margin-bottom:10px; }
   .plan-item { background:var(--card); border-radius:14px; padding:13px 16px; display:flex; align-items:center; gap:11px; box-shadow:var(--shadow); }
   .plan-item.note { border-left:4px solid var(--blue); }
@@ -244,17 +307,18 @@
   <header>
     <div class="title-row">
       <div class="basket">🧺</div>
-      <div><h1>Закупка на базаре</h1><span class="date" id="today"></span></div>
+      <div><h1>My Business</h1><span class="date" id="today"></span></div>
     </div>
   </header>
 
-  <div class="tabs">
-    <button id="tabBuy" class="active">Базар</button>
-    <button id="tabPlan">Планы</button>
-    <button id="tabCat">Каталог</button>
-    <button id="tabHist">История</button>
-    <button id="tabMon">Монитор</button>
-  </div>
+  <nav class="bottom-nav">
+    <button id="tabBuy" class="active"><span class="bn-ic">🧺</span><span class="bn-lb">Базар</span></button>
+    <button id="tabPlan"><span class="bn-ic">📝</span><span class="bn-lb">Планы</span></button>
+    <button id="tabCat"><span class="bn-ic">📦</span><span class="bn-lb">Каталог</span></button>
+    <button id="tabCash"><span class="bn-ic">💰</span><span class="bn-lb">Касса</span></button>
+    <button id="tabHist"><span class="bn-ic">🕘</span><span class="bn-lb">История</span></button>
+    <button id="tabMon"><span class="bn-ic">📊</span><span class="bn-lb">Монитор</span></button>
+  </nav>
 
   <div class="panel active" id="panelBuy">
     <div class="total-card">
@@ -264,6 +328,7 @@
       <div id="compareWrap"></div>
       <button class="save-bazar" id="saveBazarBtn">💾 Сохранить базар в историю</button>
     </div>
+    <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..."><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
     <div id="buyGroups"></div>
     <div class="actions">
       <button id="copyBtn">📋 Скопировать</button>
@@ -317,7 +382,8 @@
       <button data-mp="0">Всё</button>
     </div>
     <div class="analytics">
-      <h4>📊 Расходы по месяцам</h4>
+      <h4>📊 Доход и расход по месяцам</h4>
+      <div id="monProfit" style="display:none"></div>
       <div class="mon-chart" id="monChart"></div>
     </div>
     <div class="analytics">
@@ -341,7 +407,11 @@
         <button data-pm="note">Заметка</button>
       </div>
       <div id="planCatMode">
-        <select id="planSelect"></select>
+        <div class="plan-search-wrap">
+          <input type="text" id="planSearchInput" placeholder="🔍 Найди товар..." autocomplete="off">
+          <div class="plan-results" id="planResults"></div>
+        </div>
+        <div class="plan-picked" id="planPicked" style="display:none"></div>
         <div class="row2" style="margin-top:10px">
           <div style="flex:2"><input type="number" id="planQty" placeholder="Сколько" inputmode="decimal" value="1"></div>
           <button class="add" id="planAddCat" style="flex:1;margin-top:0">Добавить</button>
@@ -357,6 +427,54 @@
     <div class="actions" id="planActions" style="display:none">
       <button id="planCopyBtn">📋 Скопировать</button>
       <button class="clear" id="planClearBtn">🗑 Очистить план</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panelCash">
+    <div class="cash-card">
+      <div class="cash-l">Прибыль за период</div>
+      <div class="cash-v" id="cashProfit">0 <span>сум</span></div>
+      <div class="cash-breakdown">
+        <div class="cb-item"><span class="cb-dot" style="background:#3ecf8e"></span><span class="cb-name">Выручка</span><span class="cb-val" id="cashRev">0</span></div>
+        <div class="cb-item"><span class="cb-dot" style="background:#e07b3a"></span><span class="cb-name">Закупка базара</span><span class="cb-val" id="cashExp">0</span></div>
+        <div class="cb-item"><span class="cb-dot" style="background:#d98b3a"></span><span class="cb-name">Прочие расходы</span><span class="cb-val" id="cashOther">0</span></div>
+      </div>
+    </div>
+    <div class="mon-seg" id="cashSeg">
+      <button data-cp="1" class="active">Месяц</button>
+      <button data-cp="3">3 мес</button>
+      <button data-cp="12">Год</button>
+      <button data-cp="0">Всё</button>
+    </div>
+
+    <div class="plan-tabs" id="cashMode">
+      <button data-cm="rev" class="active">💵 Выручка</button>
+      <button data-cm="exp">🧾 Расходы</button>
+    </div>
+
+    <div id="cashRevMode">
+      <div class="add-form">
+        <div class="field-label">Записать выручку за день</div>
+        <div class="row2">
+          <div style="flex:1.3"><input type="date" id="revDate"></div>
+          <div style="flex:1.7"><input type="number" id="revAmount" placeholder="Сумма продаж" inputmode="decimal"></div>
+        </div>
+        <button class="add" id="revAddBtn">Записать выручку</button>
+      </div>
+      <div class="list" id="revList"></div>
+    </div>
+
+    <div id="cashExpMode" style="display:none">
+      <div class="add-form">
+        <div class="field-label">Свой расход (аренда, зарплата, свет...)</div>
+        <input type="text" id="expNote" placeholder="На что потратил" style="margin-bottom:10px">
+        <div class="row2">
+          <div style="flex:1.3"><input type="date" id="expDate"></div>
+          <div style="flex:1.7"><input type="number" id="expAmount" placeholder="Сумма" inputmode="decimal"></div>
+        </div>
+        <button class="add" id="expAddBtn">Добавить расход</button>
+      </div>
+      <div class="list" id="expList"></div>
     </div>
   </div>
 
@@ -388,7 +506,7 @@
   </div>
 
 <script>
-  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1';
+  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
   // разделы по умолчанию
   const DEFAULT_SECTIONS=[{name:'Продукты',icon:'🛒',color:'#3f8f5b'},{name:'Сигареты',icon:'🚬',color:'#8a6d3b'},{name:'Напитки',icon:'🥤',color:'#2f6fb0'}];
@@ -400,12 +518,14 @@
   function CATS_LIST(){ return sections.map(s=>s.name); }
   function META(cat){ const s=sections.find(x=>x.name===cat); return s?{icon:s.icon,color:s.color}:{icon:'📦',color:'#888'}; }
 
-  let catalog=[], qty={}, hist=[], plan=[], editId=null, pendingAction=null;
+  let catalog=[], qty={}, hist=[], plan=[], revenue=[], expenses=[], editId=null, pendingAction=null;
 
   try { catalog=JSON.parse(localStorage.getItem(KEY))||[]; } catch(e){}
   try { qty=JSON.parse(localStorage.getItem(QKEY))||{}; } catch(e){}
   try { hist=JSON.parse(localStorage.getItem(HKEY))||[]; } catch(e){}
   try { plan=JSON.parse(localStorage.getItem(PKEY))||[]; } catch(e){}
+  try { revenue=JSON.parse(localStorage.getItem(RKEY))||[]; } catch(e){}
+  try { expenses=JSON.parse(localStorage.getItem(EKEY))||[]; } catch(e){}
   // миграция: товары без раздела или с разделом, которого нет — кидаем в первый
   const firstSec=()=>sections[0]?sections[0].name:'Продукты';
   catalog.forEach(it=>{
@@ -464,29 +584,34 @@
     renderCompare();
   }
 
+  let buySearchQuery='';
   function renderBuy(){
     const wrap=$('buyGroups');
     if(catalog.length===0){ wrap.innerHTML='<div class="empty">Каталог пуст 🤷<br>Открой «Каталог» и добавь товары с ценами.</div>'; renderTotal(); return; }
-    let html='';
+    const q=buySearchQuery.trim().toLowerCase();
+    let html='', found=0;
     CATS_LIST().forEach(cat=>{
-      const items=catalog.filter(it=>it.cat===cat);
+      let items=catalog.filter(it=>it.cat===cat);
+      if(q)items=items.filter(it=>it.name.toLowerCase().includes(q));
       if(!items.length)return;
+      found+=items.length;
       const m=META(cat);
       html+=`<div class="cat-group-label"><span class="dot" style="background:${m.color}"></span>${m.icon} ${cat}</div><div class="list">`;
       html+=items.map(it=>{
-        const q=qty[it.id]||0, sum=it.price*q;
-        return `<div class="buy-item ${q>0?'has':''}" data-card="${it.id}">
+        const q2=qty[it.id]||0, sum=it.price*q2;
+        return `<div class="buy-item ${q2>0?'has':''}" data-card="${it.id}">
           <div class="buy-info"><div class="buy-name">${esc(it.name)}</div>
           <div class="buy-price" data-priceedit="${it.id}">${fmt(it.price)} сум / ${esc(it.unit||'шт')} <span class="pen">✎</span></div>
-          ${q>0?`<div class="buy-sum">= ${fmt(sum)} сум</div>`:''}</div>
+          ${q2>0?`<div class="buy-sum">= ${fmt(sum)} сум</div>`:''}</div>
           <div class="stepper">
             <button data-act="minus" data-id="${it.id}">−</button>
-            <input type="number" inputmode="decimal" data-id="${it.id}" value="${q||''}" placeholder="0">
+            <input type="number" inputmode="decimal" data-id="${it.id}" value="${q2||''}" placeholder="0">
             <button data-act="plus" data-id="${it.id}">+</button>
           </div></div>`;
       }).join('');
       html+='</div>';
     });
+    if(q&&found===0)html='<div class="empty">Ничего не найдено 🔍<br>Попробуй другое название.</div>';
     wrap.innerHTML=html; renderTotal();
   }
 
@@ -641,6 +766,14 @@
   $('searchClear').addEventListener('click',()=>{
     searchQuery=''; $('searchInput').value=''; $('searchClear').style.display='none'; renderCat(); $('searchInput').focus();
   });
+  $('buySearchInput').addEventListener('input',e=>{
+    buySearchQuery=e.target.value;
+    $('buySearchClear').style.display=buySearchQuery?'block':'none';
+    renderBuy();
+  });
+  $('buySearchClear').addEventListener('click',()=>{
+    buySearchQuery=''; $('buySearchInput').value=''; $('buySearchClear').style.display='none'; renderBuy(); $('buySearchInput').focus();
+  });
 
   function startEdit(it){
     editId=it.id;
@@ -749,7 +882,7 @@
 
   // ===== Резервная копия =====
   $('bkSaveBtn').addEventListener('click',()=>{
-    const data={ v:5, catalog, hist, sections, plan, savedAt:new Date().toISOString() };
+    const data={ v:7, catalog, hist, sections, plan, revenue, expenses, savedAt:new Date().toISOString() };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -772,6 +905,8 @@
           catalog=d.catalog; hist=Array.isArray(d.hist)?d.hist:[];
           if(Array.isArray(d.sections)&&d.sections.length){ sections=d.sections; saveSections(); }
           plan=Array.isArray(d.plan)?d.plan:[]; savePlan();
+          revenue=Array.isArray(d.revenue)?d.revenue:[]; saveRevenue();
+          expenses=Array.isArray(d.expenses)?d.expenses:[]; saveExpenses();
           const fb=sections[0]?sections[0].name:'Продукты';
           catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
           qty={}; saveCat(); saveHist(); saveQty();
@@ -811,18 +946,42 @@
     const labelTxt = monPeriod===0?'за всё время':monPeriod===12?'за год':`за ${monPeriod} мес`;
     $('monSub').textContent=`${items.length} ${pluralBaz(items.length)} ${labelTxt}`;
 
-    // график
-    const vals=months.map(mo=>byMonth[`${mo.y}-${mo.m}`]||0);
-    const max=Math.max(...vals,1);
+    // выручка по месяцам (для дохода)
+    const revByMonth={};
+    revenue.forEach(r=>{ const d=new Date(r.date); if(monPeriod>0&&new Date(r.date)<periodCutoff(monPeriod))return; const k=`${d.getFullYear()}-${d.getMonth()}`; revByMonth[k]=(revByMonth[k]||0)+r.amount; });
+    const totalRev=Object.values(revByMonth).reduce((a,b)=>a+b,0);
+    const totalExp=items.reduce((s,h)=>s+h.total,0);
+    const otherExp=expenses.filter(x=>monPeriod<=0||new Date(x.date)>=periodCutoff(monPeriod)).reduce((s,x)=>s+x.amount,0);
+    const hasRev=totalRev>0;
+
+    // график доход/расход
+    const expVals=months.map(mo=>byMonth[`${mo.y}-${mo.m}`]||0);
+    const revVals=months.map(mo=>revByMonth[`${mo.y}-${mo.m}`]||0);
+    const max=Math.max(...expVals,...revVals,1);
     let chart='';
     months.forEach((mo,i)=>{
-      const v=vals[i]; const hpct=v>0?Math.max(Math.round(v/max*100),6):2;
+      const ev=expVals[i], rv=revVals[i];
+      const eh=ev>0?Math.max(Math.round(ev/max*100),5):2;
+      const rh=rv>0?Math.max(Math.round(rv/max*100),5):2;
+      const bars = hasRev
+        ? `<div class="mc-pair"><div class="mc-bar-rev" style="height:${rh}%"></div><div class="mc-bar2" style="height:${eh}%"></div></div>`
+        : `<div class="mc-bar2" style="height:${eh}%"></div>`;
       chart+=`<div class="mc-col">
-        <div class="mc-bar-val">${v>0?fmt(v):''}</div>
-        <div class="mc-bar2" style="height:${hpct}%"></div>
+        <div class="mc-bar-val">${ev>0?fmt(ev):''}</div>
+        ${bars}
         <div class="mc-lab">${MON[mo.m]}</div></div>`;
     });
     $('monChart').innerHTML=chart;
+    // подпись прибыли над графиком
+    const profitEl=$('monProfit');
+    if(profitEl){
+      if(hasRev){
+        const profit=totalRev-totalExp-otherExp;
+        profitEl.style.display='block';
+        const otherLeg=otherExp>0?`<span class="mp-i"><span class="mp-dot" style="background:#d98b3a"></span>Прочее ${fmt(otherExp)}</span>`:'';
+        profitEl.innerHTML=`<div class="mp-legend"><span class="mp-i"><span class="mp-dot" style="background:#3ecf8e"></span>Выручка ${fmt(totalRev)}</span><span class="mp-i"><span class="mp-dot" style="background:#c8541e"></span>Закупка ${fmt(totalExp)}</span>${otherLeg}</div><div class="mp-profit ${profit<0?'neg':''}">Прибыль: ${profit<0?'−':''}${fmt(Math.abs(profit))} сум</div>`;
+      } else profitEl.style.display='none';
+    }
 
     // пузыри по разделам
     const byCat={}; CATS_LIST().forEach(c=>byCat[c]=0);
@@ -856,20 +1015,42 @@
   });
 
   // ===== Планы на следующий базар =====
-  let planMode='cat';
-  function fillPlanSelect(){
-    const sel=$('planSelect');
-    if(catalog.length===0){ sel.innerHTML='<option value="">Каталог пуст — добавь товары</option>'; return; }
-    let html='';
-    CATS_LIST().forEach(cat=>{
-      const items=catalog.filter(it=>it.cat===cat); if(!items.length)return;
-      const m=META(cat);
-      html+=`<optgroup label="${m.icon} ${esc(cat)}">`;
-      html+=items.map(it=>`<option value="${it.id}">${esc(it.name)} — ${fmt(it.price)} сум</option>`).join('');
-      html+='</optgroup>';
-    });
-    sel.innerHTML=html;
+  let planMode='cat', planPickedId=null, planSearchQ='';
+  function fillPlanSelect(){ renderPlanResults(); }
+  function renderPlanResults(){
+    const box=$('planResults');
+    const q=planSearchQ.trim().toLowerCase();
+    if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
+    if(catalog.length===0){ box.innerHTML='<div class="plan-res-empty">Каталог пуст</div>'; box.classList.add('show'); return; }
+    const matches=catalog.filter(it=>it.name.toLowerCase().includes(q)).slice(0,30);
+    if(!matches.length){ box.innerHTML='<div class="plan-res-empty">Ничего не найдено</div>'; box.classList.add('show'); return; }
+    box.innerHTML=matches.map(it=>{
+      const m=META(it.cat);
+      return `<div class="plan-res-item" data-pick="${it.id}"><span class="plan-res-ic">${m.icon}</span>
+        <span class="plan-res-name">${esc(it.name)}</span>
+        <span class="plan-res-price">${fmt(it.price)} сум</span></div>`;
+    }).join('');
+    box.classList.add('show');
   }
+  function showPicked(){
+    const wrap=$('planPicked');
+    if(!planPickedId){ wrap.style.display='none'; return; }
+    const it=catalog.find(c=>c.id===planPickedId);
+    if(!it){ planPickedId=null; wrap.style.display='none'; return; }
+    const m=META(it.cat);
+    wrap.innerHTML=`<span>${m.icon}</span><span>${esc(it.name)} — ${fmt(it.price)} сум</span><button class="pp-x" id="ppClear">×</button>`;
+    wrap.style.display='flex';
+    $('ppClear').addEventListener('click',()=>{ planPickedId=null; showPicked(); });
+  }
+  $('planResults').addEventListener('click',e=>{
+    const it=e.target.closest('[data-pick]'); if(!it)return;
+    planPickedId=it.dataset.pick;
+    planSearchQ=''; $('planSearchInput').value='';
+    $('planResults').classList.remove('show');
+    showPicked(); $('planQty').focus();
+  });
+  $('planSearchInput').addEventListener('input',e=>{ planSearchQ=e.target.value; renderPlanResults(); });
+
   function planSum(){
     return plan.reduce((s,p)=>{ if(p.type==='cat'){ const it=catalog.find(c=>c.id===p.id); if(it)return s+it.price*p.qty; } return s; },0);
   }
@@ -912,12 +1093,12 @@
   });
   // добавить из каталога
   $('planAddCat').addEventListener('click',()=>{
-    const id=$('planSelect').value; if(!id)return;
+    const id=planPickedId; if(!id){ $('planSearchInput').focus(); return; }
     const q=parseFloat($('planQty').value)||1;
     const ex=plan.find(p=>p.type==='cat'&&p.id===id);
     if(ex)ex.qty+=q; else plan.push({type:'cat',id,qty:q});
     savePlan(); renderPlan();
-    $('planQty').value='1';
+    $('planQty').value='1'; planPickedId=null; showPicked();
   });
   // добавить заметку
   function addNote(){
@@ -961,15 +1142,111 @@
     navigator.clipboard.writeText(txt).then(()=>{ $('planCopyBtn').textContent='✅ Готово'; setTimeout(()=>$('planCopyBtn').textContent='📋 Скопировать',1500); });
   });
 
+  // ===== Касса (выручка, расходы, прибыль) =====
+  let cashPeriod=1, cashMode='rev';
+  function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} }
+  function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} }
+  function periodCutoff(months){ if(months<=0)return null; const c=new Date(); c.setMonth(c.getMonth()-months+1); c.setDate(1); c.setHours(0,0,0,0); return c; }
+  function renderCash(){
+    const cut=periodCutoff(cashPeriod);
+    const inP=d=>!cut||new Date(d)>=cut;
+    const totalRev=revenue.filter(r=>inP(r.date)).reduce((s,r)=>s+r.amount,0);
+    const totalBuy=hist.filter(h=>inP(h.date)).reduce((s,h)=>s+h.total,0);
+    const totalOther=expenses.filter(x=>inP(x.date)).reduce((s,x)=>s+x.amount,0);
+    const profit=totalRev-totalBuy-totalOther;
+    const el=$('cashProfit');
+    el.classList.toggle('neg',profit<0);
+    el.innerHTML=`${profit<0?'−':''}${fmt(Math.abs(profit))} <span>сум</span>`;
+    $('cashRev').textContent=fmt(totalRev);
+    $('cashExp').textContent=fmt(totalBuy);
+    $('cashOther').textContent=fmt(totalOther);
+    const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+    // выручка
+    const rlist=$('revList');
+    const rs=revenue.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+    rlist.innerHTML=rs.length?rs.map(r=>{
+      const d=new Date(r.date);
+      return `<div class="rev-item">
+        <div class="rev-date"><div class="rev-d">${d.getDate()}</div><div class="rev-m">${MON[d.getMonth()]}</div></div>
+        <div class="rev-info"><div class="rev-amt">+ ${fmt(r.amount)} сум</div>
+        <div class="rev-lbl">выручка · ${d.toLocaleDateString('ru-RU',{weekday:'short'})}</div></div>
+        <button class="rev-del" data-rdel="${r.id}">×</button></div>`;
+    }).join(''):'<div class="empty">Пока нет записей выручки.<br>Запиши, сколько продал за день ↑</div>';
+    // прочие расходы
+    const elist=$('expList');
+    const es=expenses.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+    elist.innerHTML=es.length?es.map(x=>{
+      const d=new Date(x.date);
+      return `<div class="exp-item"><div class="exp-ic">🧾</div>
+        <div class="exp-info"><div class="exp-note">${esc(x.note||'Расход')}</div>
+        <div class="exp-meta">${d.getDate()} ${MON[d.getMonth()]} · ${d.toLocaleDateString('ru-RU',{weekday:'short'})}</div></div>
+        <span class="exp-amt">− ${fmt(x.amount)}</span>
+        <button class="exp-del" data-edel="${x.id}">×</button></div>`;
+    }).join(''):'<div class="empty">Пока нет своих расходов.<br>Добавь аренду, зарплату и т.д. ↑</div>';
+  }
+  $('cashMode').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-cm]'); if(!b)return;
+    cashMode=b.dataset.cm;
+    [...$('cashMode').children].forEach(x=>x.classList.toggle('active',x===b));
+    $('cashRevMode').style.display=cashMode==='rev'?'block':'none';
+    $('cashExpMode').style.display=cashMode==='exp'?'block':'none';
+  });
+  $('cashSeg').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-cp]'); if(!b)return;
+    cashPeriod=+b.dataset.cp;
+    [...$('cashSeg').children].forEach(x=>x.classList.toggle('active',x===b));
+    renderCash();
+  });
+  $('revAddBtn').addEventListener('click',()=>{
+    const amt=parseFloat($('revAmount').value);
+    let dateStr=$('revDate').value;
+    if(isNaN(amt)||amt<=0){ $('revAmount').focus(); return; }
+    if(!dateStr){ const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+    const iso=new Date(dateStr+'T12:00:00').toISOString();
+    const same=revenue.find(r=>r.date.slice(0,10)===dateStr);
+    if(same)same.amount+=amt; else revenue.push({id:Date.now()+'',date:iso,amount:amt});
+    saveRevenue();
+    $('revAmount').value='';
+    renderCash();
+  });
+  $('revList').addEventListener('click',e=>{
+    const d=e.target.closest('[data-rdel]'); if(!d)return;
+    modal('Удалить запись?','Запись выручки будет удалена.','Удалить',()=>{
+      revenue=revenue.filter(r=>r.id!==d.dataset.rdel); saveRevenue(); renderCash();
+    });
+  });
+  $('expAddBtn').addEventListener('click',()=>{
+    const amt=parseFloat($('expAmount').value);
+    const note=$('expNote').value.trim();
+    let dateStr=$('expDate').value;
+    if(isNaN(amt)||amt<=0){ $('expAmount').focus(); return; }
+    if(!note){ $('expNote').focus(); return; }
+    if(!dateStr){ const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+    const iso=new Date(dateStr+'T12:00:00').toISOString();
+    expenses.push({id:Date.now()+'',date:iso,amount:amt,note});
+    saveExpenses();
+    $('expAmount').value=''; $('expNote').value='';
+    renderCash();
+  });
+  $('expList').addEventListener('click',e=>{
+    const d=e.target.closest('[data-edel]'); if(!d)return;
+    modal('Удалить расход?','Запись расхода будет удалена.','Удалить',()=>{
+      expenses=expenses.filter(x=>x.id!==d.dataset.edel); saveExpenses(); renderCash();
+    });
+  });
+  function setRevDefaultDate(){ const t=new Date(); const s=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; $('revDate').value=s; $('expDate').value=s; }
+
   function switchTab(t){
-    ['Buy','Plan','Cat','Hist','Mon'].forEach(x=>{ $('tab'+x).classList.toggle('active',x===t); $('panel'+x).classList.toggle('active',x===t); });
+    ['Buy','Plan','Cat','Cash','Hist','Mon'].forEach(x=>{ $('tab'+x).classList.toggle('active',x===t); $('panel'+x).classList.toggle('active',x===t); });
     if(t==='Hist')renderHist();
     if(t==='Mon')renderMon();
     if(t==='Plan'){ fillPlanSelect(); renderPlan(); }
+    if(t==='Cash'){ setRevDefaultDate(); renderCash(); }
   }
   $('tabBuy').addEventListener('click',()=>switchTab('Buy'));
   $('tabPlan').addEventListener('click',()=>switchTab('Plan'));
   $('tabCat').addEventListener('click',()=>switchTab('Cat'));
+  $('tabCash').addEventListener('click',()=>switchTab('Cash'));
   $('tabHist').addEventListener('click',()=>switchTab('Hist'));
   $('tabMon').addEventListener('click',()=>switchTab('Mon'));
 
