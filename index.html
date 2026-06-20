@@ -27,6 +27,8 @@
   .title-row { display:flex; align-items:center; gap:10px; }
   .basket { width:42px; height:42px; flex-shrink:0; border-radius:13px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(200,84,30,.28); }
   .sync-badge { width:38px; height:38px; flex-shrink:0; border-radius:11px; background:var(--card); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; font-size:18px; transition:.2s; }
+  .acc-btn { width:38px; height:38px; flex-shrink:0; border-radius:11px; background:var(--card); box-shadow:var(--shadow); border:none; font-size:18px; cursor:pointer; margin-right:8px; }
+  .acc-btn:active { transform:scale(.92); }
   .sync-badge.saving { animation:pulse 1s ease infinite; }
   .sync-badge.error { background:#fde8e4; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -344,6 +346,7 @@
     <div class="title-row">
       <div class="basket">🧺</div>
       <div style="flex:1"><h1>My Business</h1><span class="date" id="today"></span></div>
+      <button class="acc-btn" id="accBtn" title="Аккаунт">👤</button>
       <div class="sync-badge" id="syncBadge" title="Синхронизация">☁️</div>
     </div>
   </header>
@@ -538,6 +541,20 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="accModalBg">
+    <div class="modal">
+      <h3>👤 Аккаунт</h3>
+      <p style="margin-bottom:14px">Код доступа — это твой аккаунт. Введи один и тот же код на любом телефоне (и в Telegram, и в иконке с рабочего стола), чтобы везде были одни данные.</p>
+      <div class="field-label">Текущий аккаунт</div>
+      <div id="accCurrent" style="font-weight:800;font-size:15px;margin:4px 0 14px;padding:10px 14px;background:var(--bg);border-radius:11px"></div>
+      <div class="field-label">Код доступа</div>
+      <input type="text" id="accCodeInput" placeholder="напр. khumoyun" autocomplete="off" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
+      <button class="add" id="accSaveBtn" style="margin-top:0">Войти по коду</button>
+      <button class="mb-cancel" id="accImportBtn" style="width:100%;margin-top:8px">📥 Забрать данные из Telegram</button>
+      <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px">Закрыть</button>
+    </div>
+  </div>
+
   <div class="modal-bg" id="secModalBg">
     <div class="modal sec-modal">
       <h3>⚙️ Разделы</h3>
@@ -558,22 +575,26 @@
   // ===== Облако (Supabase) =====
   const SUPA_URL='https://aozmnrvdskcgkkpvcirk.supabase.co';
   const SUPA_KEY='sb_publishable_HukLaSRWjBH3CjhrQTGf2A_raw_xybO';
-  // user_id: из Telegram если есть, иначе устройство (чтобы и в браузере работало)
-  let cloudUserId='';
+  // user_id: 1) код доступа если задан, 2) Telegram, 3) устройство
+  let cloudUserId='', cloudTgId='';
   (function(){
     try{
       const tg=window.Telegram&&window.Telegram.WebApp;
       if(tg){ tg.ready&&tg.ready(); tg.expand&&tg.expand();
         const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
-        if(u&&u.id) cloudUserId='tg_'+u.id;
+        if(u&&u.id) cloudTgId='tg_'+u.id;
       }
     }catch(e){}
-    if(!cloudUserId){
+    const code=localStorage.getItem('bazar_account_code');
+    if(code){ cloudUserId='acc_'+code; }
+    else if(cloudTgId){ cloudUserId=cloudTgId; }
+    else {
       let dev=localStorage.getItem('bazar_device_id');
       if(!dev){ dev='dev_'+Date.now()+''+Math.floor(Math.random()*99999); localStorage.setItem('bazar_device_id',dev); }
       cloudUserId=dev;
     }
   })();
+  function normCode(s){ return String(s).trim().toLowerCase().replace(/[^a-z0-9_]/g,''); }
 
   let cloudSaveTimer=null, cloudReady=false;
   function setSync(state){
@@ -633,13 +654,56 @@
       setSync('ok');
     }catch(e){ setSync('error'); }
   }
+  // загрузить данные из конкретного user_id (для переноса)
+  async function fetchDataFor(uid){
+    const r=await fetch(`${SUPA_URL}/rest/v1/app_data?user_id=eq.${encodeURIComponent(uid)}&select=data`,{
+      headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
+    });
+    if(!r.ok)throw new Error('fetch '+r.status);
+    const rows=await r.json();
+    return (rows&&rows.length&&rows[0].data)?rows[0].data:null;
+  }
+  // сменить аккаунт на код доступа
+  async function switchToCode(rawCode){
+    const code=normCode(rawCode);
+    if(!code)return {ok:false,msg:'Пустой код'};
+    localStorage.setItem('bazar_account_code',code);
+    cloudUserId='acc_'+code;
+    try{
+      const d=await fetchDataFor(cloudUserId);
+      if(d){ applyData(d); saveLocalCacheOnly(); }
+      cloudReady=true;
+      fillCatSelect&&fillCatSelect(); renderBuy&&renderBuy(); renderCat&&renderCat(); renderHist&&renderHist();
+      if(!d){ await cloudPush(); } // нового кода ещё нет — создаём с текущими данными
+      setSync('ok');
+      return {ok:true,hadData:!!d};
+    }catch(e){ setSync('error'); return {ok:false,msg:'Нет связи'}; }
+  }
+  // перенести данные из Telegram-аккаунта в текущий код
+  async function importFromTelegram(){
+    if(!cloudTgId) return {ok:false,msg:'Открой через Telegram, чтобы найти старые данные'};
+    try{
+      const d=await fetchDataFor(cloudTgId);
+      if(!d) return {ok:false,msg:'В Telegram-аккаунте данных не найдено'};
+      applyData(d); saveLocalCacheOnly(); await cloudPush();
+      fillCatSelect&&fillCatSelect(); renderBuy&&renderBuy(); renderCat&&renderCat(); renderHist&&renderHist();
+      return {ok:true};
+    }catch(e){ return {ok:false,msg:'Нет связи'}; }
+  }
+  function saveLocalCacheOnly(){
+    try{
+      localStorage.setItem(KEY,JSON.stringify(catalog)); localStorage.setItem(QKEY,JSON.stringify(qty));
+      localStorage.setItem(HKEY,JSON.stringify(hist)); localStorage.setItem(PKEY,JSON.stringify(plan));
+      localStorage.setItem(SKEY,JSON.stringify(sections)); localStorage.setItem(RKEY,JSON.stringify(revenue));
+      localStorage.setItem(EKEY,JSON.stringify(expenses));
+    }catch(e){}
+  }
   // отложенное сохранение (вызывается после любого изменения)
   function cloudSync(){
     if(!cloudReady)return;
     clearTimeout(cloudSaveTimer);
     setSync('saving');
-    cloudSaveTimer=setTimeout(cloudPush,800);
-  }
+    cloudSaveTimer=setTimeout(cloudPush,800);  }
 
   const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
@@ -1525,10 +1589,48 @@
     });
   });
 
+  // ===== Аккаунт =====
+  function accLabel(){
+    if(cloudUserId.startsWith('acc_'))return 'Код: '+cloudUserId.slice(4);
+    if(cloudUserId.startsWith('tg_'))return 'Telegram-аккаунт';
+    return 'Это устройство (без кода)';
+  }
+  function openAcc(){
+    $('accCurrent').textContent=accLabel();
+    const code=localStorage.getItem('bazar_account_code')||'';
+    $('accCodeInput').value=code;
+    $('accImportBtn').style.display=cloudTgId?'block':'none';
+    $('accModalBg').classList.add('show');
+  }
+  $('accBtn').addEventListener('click',openAcc);
+  $('accClose').addEventListener('click',()=>$('accModalBg').classList.remove('show'));
+  $('accModalBg').addEventListener('click',e=>{ if(e.target===$('accModalBg'))$('accModalBg').classList.remove('show'); });
+  $('accSaveBtn').addEventListener('click',async()=>{
+    const code=normCode($('accCodeInput').value);
+    if(!code){ $('accCodeInput').focus(); return; }
+    $('accSaveBtn').textContent='Вхожу...';
+    const res=await switchToCode(code);
+    $('accSaveBtn').textContent='Войти по коду';
+    if(res.ok){
+      $('accCurrent').textContent=accLabel();
+      modal(res.hadData?'Готово ✅':'Аккаунт создан ✅',
+            res.hadData?'Данные этого кода загружены.':'Новый аккаунт по коду «'+code+'». Текущие данные сохранены в него.','Ок',null,true);
+      $('accModalBg').classList.remove('show');
+    } else {
+      modal('Ошибка',res.msg||'Не удалось','Ок',null,true);
+    }
+  });
+  $('accImportBtn').addEventListener('click',async()=>{
+    $('accImportBtn').textContent='Переношу...';
+    const res=await importFromTelegram();
+    $('accImportBtn').textContent='📥 Забрать данные из Telegram';
+    if(res.ok){ modal('Перенесено ✅','Данные из Telegram теперь в этом аккаунте.','Ок',null,true); $('accModalBg').classList.remove('show'); }
+    else { modal('Не вышло',res.msg||'Ошибка','Ок',null,true); }
+  });
+
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist();
-  // загрузка данных из облака (после первого рендера локального кэша)
   cloudLoad();
 </script>
 </body>
