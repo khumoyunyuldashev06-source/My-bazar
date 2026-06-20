@@ -75,6 +75,10 @@
   .list { display:flex; flex-direction:column; gap:10px; }
   .cat-item { background:var(--card); border-radius:16px; padding:15px 16px; display:flex; align-items:center; gap:10px; box-shadow:var(--shadow); }
   .search-box { display:flex; align-items:center; gap:8px; background:var(--card); border-radius:14px; padding:4px 6px 4px 14px; margin-bottom:6px; box-shadow:var(--shadow); }
+  .sort-row { display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  .sort-lbl { font-size:12px; color:var(--muted); font-weight:700; }
+  .sort-row button { background:var(--card); border:none; color:var(--muted); font-size:12px; font-weight:700; padding:7px 12px; border-radius:20px; cursor:pointer; font-family:inherit; box-shadow:var(--shadow); transition:.12s; }
+  .sort-row button.active { background:var(--accent); color:#fff; }
   .search-ic { font-size:15px; opacity:.6; }
   .search-box input { flex:1; border:none; background:transparent; outline:none; font-size:16px; font-family:inherit; color:var(--ink); padding:11px 4px; }
   .search-box input::placeholder { color:#bdb3a3; }
@@ -243,6 +247,17 @@
   .exp-meta { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
   .exp-amt { font-weight:800; color:var(--accent); font-size:15px; white-space:nowrap; }
   .exp-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; flex-shrink:0; }
+  .day-card { background:var(--card); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow); }
+  .day-head { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+  .day-date { font-size:15px; font-weight:800; }
+  .day-dow { font-size:12px; color:var(--muted); font-weight:600; }
+  .day-profit { margin-left:auto; font-size:15px; font-weight:800; color:var(--green); }
+  .day-profit.neg { color:var(--red); }
+  .day-lines { display:flex; flex-direction:column; gap:5px; }
+  .day-line { display:flex; align-items:center; gap:7px; font-size:13px; }
+  .day-line .dl-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .day-line .dl-name { color:var(--muted); font-weight:600; }
+  .day-line .dl-val { margin-left:auto; font-weight:700; }
   .plan-s { font-size:13px; color:#9db3c4; margin-top:5px; font-weight:500; }
   .plan-tobuy { margin-top:14px; width:100%; background:rgba(255,255,255,.16); color:#fff; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
   .plan-tobuy:active { background:rgba(255,255,255,.3); }
@@ -361,6 +376,12 @@
       <button class="cancel-edit" id="cancelEditBtn" style="display:none">Отменить редактирование</button>
     </div>
     <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="searchInput" placeholder="Поиск по каталогу..."><button class="search-clear" id="searchClear" style="display:none">×</button></div>
+    <div class="sort-row" id="sortRow">
+      <span class="sort-lbl">Сортировка:</span>
+      <button data-sort="added" class="active">Как добавил</button>
+      <button data-sort="name">По имени</button>
+      <button data-sort="price">По цене</button>
+    </div>
     <div id="catGroups"></div>
   </div>
 
@@ -458,6 +479,7 @@
     <div class="plan-tabs" id="cashMode">
       <button data-cm="rev" class="active">💵 Выручка</button>
       <button data-cm="exp">🧾 Расходы</button>
+      <button data-cm="day">📅 По дням</button>
     </div>
 
     <div id="cashRevMode">
@@ -483,6 +505,10 @@
         <button class="add" id="expAddBtn">Добавить расход</button>
       </div>
       <div class="list" id="expList"></div>
+    </div>
+
+    <div id="cashDayMode" style="display:none">
+      <div class="list" id="dayList"></div>
     </div>
   </div>
 
@@ -646,6 +672,7 @@
   }
 
   let searchQuery='';
+  let catSort='added';
   function renderCat(){
     const wrap=$('catGroups');
     if(catalog.length===0){ wrap.innerHTML='<div class="empty">Пока нет товаров.<br>Добавь первый выше ↑</div>'; return; }
@@ -654,6 +681,8 @@
     CATS_LIST().forEach(cat=>{
       let items=catalog.filter(it=>it.cat===cat);
       if(q)items=items.filter(it=>it.name.toLowerCase().includes(q));
+      if(catSort==='name')items=items.slice().sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+      else if(catSort==='price')items=items.slice().sort((a,b)=>b.price-a.price);
       if(!items.length)return;
       found+=items.length;
       const m=META(cat);
@@ -795,6 +824,12 @@
   });
   $('searchClear').addEventListener('click',()=>{
     searchQuery=''; $('searchInput').value=''; $('searchClear').style.display='none'; renderCat(); $('searchInput').focus();
+  });
+  $('sortRow').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-sort]'); if(!b)return;
+    catSort=b.dataset.sort;
+    [...$('sortRow').querySelectorAll('button')].forEach(x=>x.classList.toggle('active',x===b));
+    renderCat();
   });
   $('buySearchInput').addEventListener('input',e=>{
     buySearchQuery=e.target.value;
@@ -1096,22 +1131,36 @@
     $('planToBuyBtn').style.display=catItems.length?'block':'none';
 
     if(!cnt){ list.innerHTML='<div class="empty">План пуст 📝<br>Добавь товары из каталога или напиши заметку.</div>'; return; }
-    list.innerHTML=plan.map((p,i)=>{
-      if(p.type==='cat'){
-        const it=catalog.find(c=>c.id===p.id);
-        if(!it)return '';
-        const m=META(it.cat);
+    // индекс каждого пункта в исходном массиве (для удаления)
+    const indexed=plan.map((p,i)=>({p,i}));
+    let html='';
+    // товары — сгруппированы по разделам
+    CATS_LIST().forEach(cat=>{
+      const inCat=indexed.filter(x=>x.p.type==='cat'&&(catalog.find(c=>c.id===x.p.id)||{}).cat===cat);
+      if(!inCat.length)return;
+      const m=META(cat);
+      const catSum=inCat.reduce((s,x)=>{ const it=catalog.find(c=>c.id===x.p.id); return s+(it?it.price*x.p.qty:0); },0);
+      html+=`<div class="plan-day-sep" style="display:flex;align-items:center;gap:7px"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:${m.color}"></span>${m.icon} ${cat} · ${fmt(catSum)} сум</div><div class="list">`;
+      html+=inCat.map(x=>{
+        const it=catalog.find(c=>c.id===x.p.id);
         return `<div class="plan-item"><span class="plan-ic">${m.icon}</span>
           <div class="plan-info"><div class="plan-name">${esc(it.name)}</div>
-          <div class="plan-meta">${fmt(it.price)} × ${p.qty} ${esc(it.unit||'шт')}</div></div>
-          <span class="plan-sum">${fmt(it.price*p.qty)}</span>
-          <button class="plan-del" data-pdel="${i}">×</button></div>`;
-      } else {
-        return `<div class="plan-item note"><span class="plan-ic">📌</span>
-          <div class="plan-info"><div class="plan-name">${esc(p.text)}</div></div>
-          <button class="plan-del" data-pdel="${i}">×</button></div>`;
-      }
-    }).join('');
+          <div class="plan-meta">${fmt(it.price)} × ${x.p.qty} ${esc(it.unit||'шт')}</div></div>
+          <span class="plan-sum">${fmt(it.price*x.p.qty)}</span>
+          <button class="plan-del" data-pdel="${x.i}">×</button></div>`;
+      }).join('');
+      html+='</div>';
+    });
+    // заметки — в конце
+    const notes=indexed.filter(x=>x.p.type==='note');
+    if(notes.length){
+      html+=`<div class="plan-day-sep">📌 Заметки</div><div class="list">`;
+      html+=notes.map(x=>`<div class="plan-item note"><span class="plan-ic">📌</span>
+        <div class="plan-info"><div class="plan-name">${esc(x.p.text)}</div></div>
+        <button class="plan-del" data-pdel="${x.i}">×</button></div>`).join('');
+      html+='</div>';
+    }
+    list.innerHTML=html;
   }
   // переключение режима
   $('planMode').addEventListener('click',e=>{
@@ -1213,6 +1262,31 @@
         <span class="exp-amt">− ${fmt(x.amount)}</span>
         <button class="exp-del" data-edel="${x.id}">×</button></div>`;
     }).join(''):'<div class="empty">Пока нет своих расходов.<br>Добавь аренду, зарплату и т.д. ↑</div>';
+    renderDays(inP,MON);
+  }
+  function renderDays(inP,MON){
+    const list=$('dayList');
+    // собираем все события по дням (ключ — YYYY-MM-DD)
+    const days={};
+    const add=(date,field,val)=>{ const k=new Date(date).toISOString().slice(0,10); if(!days[k])days[k]={rev:0,buy:0,other:0}; days[k][field]+=val; };
+    revenue.filter(r=>inP(r.date)).forEach(r=>add(r.date,'rev',r.amount));
+    hist.filter(h=>inP(h.date)).forEach(h=>add(h.date,'buy',h.total));
+    expenses.filter(x=>inP(x.date)).forEach(x=>add(x.date,'other',x.amount));
+    const keys=Object.keys(days).sort().reverse();
+    if(!keys.length){ list.innerHTML='<div class="empty">Нет данных за период.<br>Запиши выручку или сохрани базар.</div>'; return; }
+    list.innerHTML=keys.map(k=>{
+      const d=new Date(k+'T12:00:00'); const v=days[k];
+      const profit=v.rev-v.buy-v.other;
+      let lines='';
+      if(v.rev>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#3ecf8e"></span><span class="dl-name">Выручка</span><span class="dl-val">+ ${fmt(v.rev)}</span></div>`;
+      if(v.buy>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#c8541e"></span><span class="dl-name">Закупка</span><span class="dl-val">− ${fmt(v.buy)}</span></div>`;
+      if(v.other>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#d98b3a"></span><span class="dl-name">Прочие расходы</span><span class="dl-val">− ${fmt(v.other)}</span></div>`;
+      return `<div class="day-card"><div class="day-head">
+        <span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>
+        <span class="day-dow">${d.toLocaleDateString('ru-RU',{weekday:'long'})}</span>
+        <span class="day-profit ${profit<0?'neg':''}">${profit<0?'−':''}${fmt(Math.abs(profit))} сум</span>
+        </div><div class="day-lines">${lines}</div></div>`;
+    }).join('');
   }
   $('cashMode').addEventListener('click',e=>{
     const b=e.target.closest('button[data-cm]'); if(!b)return;
@@ -1220,6 +1294,7 @@
     [...$('cashMode').children].forEach(x=>x.classList.toggle('active',x===b));
     $('cashRevMode').style.display=cashMode==='rev'?'block':'none';
     $('cashExpMode').style.display=cashMode==='exp'?'block':'none';
+    $('cashDayMode').style.display=cashMode==='day'?'block':'none';
   });
   $('cashSeg').addEventListener('click',e=>{
     const b=e.target.closest('button[data-cp]'); if(!b)return;
