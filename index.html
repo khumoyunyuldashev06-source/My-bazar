@@ -263,6 +263,38 @@
   .exp-meta { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
   .exp-amt { font-weight:800; color:var(--accent); font-size:15px; white-space:nowrap; }
   .exp-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; flex-shrink:0; }
+  .debt-cards { display:flex; gap:10px; margin-bottom:14px; }
+  .debt-sum { flex:1; border-radius:18px; padding:16px 18px; color:#fff; box-shadow:var(--shadow); }
+  .debt-sum.owe { background:linear-gradient(160deg,#7a2e22,#5e2319); }
+  .debt-sum.owed { background:linear-gradient(160deg,#1d3a2c,#1a2f26); }
+  .ds-l { font-size:12px; opacity:.8; text-transform:uppercase; letter-spacing:.8px; font-weight:700; }
+  .ds-v { font-size:23px; font-weight:800; margin-top:3px; }
+  #debtWho, #debtNote, #debtDate, #debtAmount { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #debtDate { font-size:15px; padding:13px 12px; }
+  #debtWho:focus, #debtNote:focus, #debtDate:focus, #debtAmount:focus { border-color:var(--accent); background:#fff; }
+  .debt-item { background:var(--card); border-radius:14px; padding:13px 16px; display:flex; align-items:center; gap:11px; box-shadow:var(--shadow); border-left:4px solid var(--line); }
+  .debt-item.owe { border-left-color:#c0392b; }
+  .debt-item.owed { border-left-color:#3f8f5b; }
+  .debt-item.done { opacity:.55; }
+  .debt-info { flex:1; min-width:0; }
+  .debt-who { font-size:15px; font-weight:700; }
+  .debt-who .done-tag { font-size:11px; color:var(--green); font-weight:700; margin-left:6px; }
+  .debt-meta { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
+  .debt-amt { font-weight:800; font-size:15px; white-space:nowrap; }
+  .debt-amt.owe { color:var(--red); } .debt-amt.owed { color:var(--green); }
+  .debt-actions { display:flex; gap:6px; flex-shrink:0; }
+  .debt-done-btn { border:none; background:#e3f3e8; color:var(--green); width:32px; height:32px; border-radius:9px; font-size:15px; cursor:pointer; }
+  .debt-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; }
+  .debt-sep { font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:14px 3px 8px; }
+  #debtSearchInput, #debtQty, #debtDate2 { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #debtDate2 { font-size:15px; padding:13px 12px; }
+  #debtSearchInput:focus, #debtQty:focus, #debtDate2:focus { border-color:var(--accent); background:#fff; }
+  .debt-cart { display:flex; flex-direction:column; gap:7px; margin-top:10px; }
+  .dc-item { display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:10px; padding:9px 12px; font-size:14px; }
+  .dc-name { font-weight:700; flex:1; }
+  .dc-sum { font-weight:800; color:var(--accent); }
+  .dc-x { border:none; background:none; color:var(--red); font-size:16px; cursor:pointer; }
+  .dc-total { display:flex; justify-content:space-between; font-weight:800; padding:8px 12px 0; font-size:15px; }
   .day-card { background:var(--card); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow); }
   .day-head { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
   .day-date { font-size:15px; font-weight:800; }
@@ -357,6 +389,7 @@
     <button id="tabCat"><span class="bn-ic">📦</span><span class="bn-lb">Каталог</span></button>
     <button id="tabCash"><span class="bn-ic">💰</span><span class="bn-lb">Касса</span></button>
     <button id="tabHist"><span class="bn-ic">🕘</span><span class="bn-lb">История</span></button>
+    <button id="tabDebt"><span class="bn-ic">🤝</span><span class="bn-lb">Долги</span></button>
     <button id="tabMon"><span class="bn-ic">📊</span><span class="bn-lb">Монитор</span></button>
   </nav>
 
@@ -438,6 +471,47 @@
       <div class="bubble-area" id="bubbleArea"></div>
       <div id="bubbleLegend"></div>
     </div>
+  </div>
+
+  <div class="panel" id="panelDebt">
+    <div class="debt-cards">
+      <div class="debt-sum owe"><div class="ds-l">Я должен</div><div class="ds-v" id="debtOwe">0</div></div>
+      <div class="debt-sum owed"><div class="ds-l">Мне должны</div><div class="ds-v" id="debtOwed">0</div></div>
+    </div>
+    <div class="add-form">
+      <div class="plan-tabs" id="debtMode">
+        <button data-dm="owe" class="active">Я должен</button>
+        <button data-dm="owed">Мне должны</button>
+      </div>
+      <input type="text" id="debtWho" placeholder="Кому / кто (имя поставщика, покупателя)" style="margin-bottom:10px">
+      <div class="plan-tabs" id="debtKind">
+        <button data-dk="sum" class="active">💵 Сумма</button>
+        <button data-dk="cat">📦 Из каталога</button>
+      </div>
+      <div id="debtSumMode">
+        <input type="text" id="debtNote" placeholder="За что (необязательно)" style="margin-bottom:10px">
+        <div class="row2">
+          <div style="flex:1.3"><input type="date" id="debtDate"></div>
+          <div style="flex:1.7"><input type="number" id="debtAmount" placeholder="Сумма" inputmode="decimal"></div>
+        </div>
+        <button class="add" id="debtAddBtn">Добавить долг</button>
+      </div>
+      <div id="debtCatMode" style="display:none">
+        <div class="plan-search-wrap">
+          <input type="text" id="debtSearchInput" placeholder="🔍 Найди товар..." autocomplete="off">
+          <div class="plan-results" id="debtResults"></div>
+        </div>
+        <div class="debt-cart" id="debtCart"></div>
+        <div class="plan-picked" id="debtPicked" style="display:none"></div>
+        <div class="row2" style="margin-top:10px">
+          <div style="flex:1"><input type="number" id="debtQty" placeholder="Сколько" inputmode="decimal" value="1"></div>
+          <button class="add" id="debtAddItem" style="flex:1;margin-top:0">＋ В долг</button>
+        </div>
+        <input type="date" id="debtDate2" style="margin-top:10px">
+        <button class="add" id="debtAddCatBtn" style="margin-top:10px">Записать долг на сумму</button>
+      </div>
+    </div>
+    <div class="list" id="debtList"></div>
   </div>
 
   <div class="panel" id="panelPlan">
@@ -606,7 +680,7 @@
     else b.textContent='☁️';
   }
   function collectData(){
-    return { catalog, hist, sections, plan, revenue, expenses, v:7 };
+    return { catalog, hist, sections, plan, revenue, expenses, debts, v:7 };
   }
   function applyData(d){
     if(!d)return;
@@ -616,6 +690,7 @@
     if(Array.isArray(d.plan))plan=d.plan;
     if(Array.isArray(d.revenue))revenue=d.revenue;
     if(Array.isArray(d.expenses))expenses=d.expenses;
+    if(Array.isArray(d.debts))debts=d.debts;
     const fb=sections[0]?sections[0].name:'Продукты';
     catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
   }
@@ -696,6 +771,7 @@
       localStorage.setItem(HKEY,JSON.stringify(hist)); localStorage.setItem(PKEY,JSON.stringify(plan));
       localStorage.setItem(SKEY,JSON.stringify(sections)); localStorage.setItem(RKEY,JSON.stringify(revenue));
       localStorage.setItem(EKEY,JSON.stringify(expenses));
+      localStorage.setItem(DKEY,JSON.stringify(debts));
     }catch(e){}
   }
   // отложенное сохранение (вызывается после любого изменения)
@@ -705,7 +781,7 @@
     setSync('saving');
     cloudSaveTimer=setTimeout(cloudPush,800);  }
 
-  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1';
+  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1', DKEY='bazar_debts_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
   // разделы по умолчанию
   const DEFAULT_SECTIONS=[{name:'Продукты',icon:'🛒',color:'#3f8f5b'},{name:'Сигареты',icon:'🚬',color:'#8a6d3b'},{name:'Напитки',icon:'🥤',color:'#2f6fb0'}];
@@ -717,7 +793,7 @@
   function CATS_LIST(){ return sections.map(s=>s.name); }
   function META(cat){ const s=sections.find(x=>x.name===cat); return s?{icon:s.icon,color:s.color}:{icon:'📦',color:'#888'}; }
 
-  let catalog=[], qty={}, hist=[], plan=[], revenue=[], expenses=[], editId=null, pendingAction=null;
+  let catalog=[], qty={}, hist=[], plan=[], revenue=[], expenses=[], debts=[], editId=null, pendingAction=null;
 
   try { catalog=JSON.parse(localStorage.getItem(KEY))||[]; } catch(e){}
   try { qty=JSON.parse(localStorage.getItem(QKEY))||{}; } catch(e){}
@@ -725,6 +801,7 @@
   try { plan=JSON.parse(localStorage.getItem(PKEY))||[]; } catch(e){}
   try { revenue=JSON.parse(localStorage.getItem(RKEY))||[]; } catch(e){}
   try { expenses=JSON.parse(localStorage.getItem(EKEY))||[]; } catch(e){}
+  try { debts=JSON.parse(localStorage.getItem(DKEY))||[]; } catch(e){}
   // миграция: товары без раздела или с разделом, которого нет — кидаем в первый
   const firstSec=()=>sections[0]?sections[0].name:'Продукты';
   catalog.forEach(it=>{
@@ -1112,7 +1189,7 @@
 
   // ===== Резервная копия =====
   $('bkSaveBtn').addEventListener('click',()=>{
-    const data={ v:7, catalog, hist, sections, plan, revenue, expenses, savedAt:new Date().toISOString() };
+    const data={ v:8, catalog, hist, sections, plan, revenue, expenses, debts, savedAt:new Date().toISOString() };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -1137,6 +1214,7 @@
           plan=Array.isArray(d.plan)?d.plan:[]; savePlan();
           revenue=Array.isArray(d.revenue)?d.revenue:[]; saveRevenue();
           expenses=Array.isArray(d.expenses)?d.expenses:[]; saveExpenses();
+          debts=Array.isArray(d.debts)?d.debts:[]; saveDebts();
           const fb=sections[0]?sections[0].name:'Продукты';
           catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
           qty={}; saveCat(); saveHist(); saveQty();
@@ -1390,6 +1468,7 @@
   let cashPeriod=1, cashMode='rev';
   function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} cloudSync(); }
   function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} cloudSync(); }
+  function saveDebts(){ try{localStorage.setItem(DKEY,JSON.stringify(debts));}catch(e){} cloudSync(); }
   function periodCutoff(months){ if(months<=0)return null; const c=new Date(); c.setMonth(c.getMonth()-months+1); c.setDate(1); c.setHours(0,0,0,0); return c; }
   function renderCash(){
     const cut=periodCutoff(cashPeriod);
@@ -1506,17 +1585,145 @@
   });
   function setRevDefaultDate(){ const t=new Date(); const s=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; $('revDate').value=s; $('expDate').value=s; }
 
+  // ===== Долги =====
+  let debtMode='owe';
+  function renderDebt(){
+    const owe=debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+d.amount,0);
+    const owed=debts.filter(d=>d.type==='owed'&&!d.done).reduce((s,d)=>s+d.amount,0);
+    $('debtOwe').textContent=fmt(owe)+' сум';
+    $('debtOwed').textContent=fmt(owed)+' сум';
+    const list=$('debtList');
+    if(!debts.length){ list.innerHTML='<div class="empty">Долгов нет 🤝<br>Записывай, кому должен или кто должен тебе.</div>'; return; }
+    const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+    const active=debts.filter(d=>!d.done).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const done=debts.filter(d=>d.done).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const card=d=>{
+      const dt=new Date(d.date);
+      const label=d.type==='owe'?'Я должен':'Мне должен';
+      let itemsHtml='';
+      if(d.items&&d.items.length){
+        itemsHtml=`<div class="debt-meta" style="margin-top:4px">${d.items.map(x=>esc(x.name)+' ×'+x.qty).join(', ')}</div>`;
+      }
+      return `<div class="debt-item ${d.type} ${d.done?'done':''}">
+        <div class="debt-info"><div class="debt-who">${esc(d.who||label)}${d.done?'<span class="done-tag">✓ закрыт</span>':''}</div>
+        <div class="debt-meta">${label}${d.note?' · '+esc(d.note):''} · ${dt.getDate()} ${MON[dt.getMonth()]}</div>${itemsHtml}</div>
+        <span class="debt-amt ${d.type}">${d.type==='owe'?'−':'+'} ${fmt(d.amount)}</span>
+        <div class="debt-actions">
+          ${d.done?'':`<button class="debt-done-btn" data-ddone="${d.id}" title="Закрыть">✓</button>`}
+          <button class="debt-del" data-ddel="${d.id}">×</button>
+        </div></div>`;
+    };
+    let html='';
+    if(active.length){ html+=active.map(card).join(''); }
+    if(done.length){ html+=`<div class="debt-sep">✓ Закрытые</div>`+done.map(card).join(''); }
+    list.innerHTML=html;
+  }
+  $('debtMode').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-dm]'); if(!b)return;
+    debtMode=b.dataset.dm;
+    [...$('debtMode').children].forEach(x=>x.classList.toggle('active',x===b));
+  });
+  // переключатель Сумма / Из каталога
+  let debtKind='sum', debtPickedId=null, debtSearchQ='', debtCart=[];
+  $('debtKind').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-dk]'); if(!b)return;
+    debtKind=b.dataset.dk;
+    [...$('debtKind').children].forEach(x=>x.classList.toggle('active',x===b));
+    $('debtSumMode').style.display=debtKind==='sum'?'block':'none';
+    $('debtCatMode').style.display=debtKind==='cat'?'block':'none';
+  });
+  function renderDebtResults(){
+    const box=$('debtResults'); const q=debtSearchQ.trim().toLowerCase();
+    if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
+    const matches=catalog.filter(it=>it.name.toLowerCase().includes(q)).slice(0,30);
+    if(!matches.length){ box.innerHTML='<div class="plan-res-empty">Ничего не найдено</div>'; box.classList.add('show'); return; }
+    box.innerHTML=matches.map(it=>{ const m=META(it.cat); return `<div class="plan-res-item" data-dpick="${it.id}"><span class="plan-res-ic">${m.icon}</span><span class="plan-res-name">${esc(it.name)}</span><span class="plan-res-price">${fmt(it.price)} сум</span></div>`; }).join('');
+    box.classList.add('show');
+  }
+  function showDebtPicked(){
+    const wrap=$('debtPicked');
+    if(!debtPickedId){ wrap.style.display='none'; return; }
+    const it=catalog.find(c=>c.id===debtPickedId);
+    if(!it){ debtPickedId=null; wrap.style.display='none'; return; }
+    const m=META(it.cat);
+    wrap.innerHTML=`<span>${m.icon}</span><span>${esc(it.name)} — ${fmt(it.price)} сум</span><button class="pp-x" id="dppClear">×</button>`;
+    wrap.style.display='flex';
+    $('dppClear').addEventListener('click',()=>{ debtPickedId=null; showDebtPicked(); });
+  }
+  $('debtResults').addEventListener('click',e=>{
+    const it=e.target.closest('[data-dpick]'); if(!it)return;
+    debtPickedId=it.dataset.dpick; debtSearchQ=''; $('debtSearchInput').value='';
+    $('debtResults').classList.remove('show'); showDebtPicked(); $('debtQty').focus();
+  });
+  $('debtSearchInput').addEventListener('input',e=>{ debtSearchQ=e.target.value; renderDebtResults(); });
+  function renderDebtCart(){
+    const wrap=$('debtCart');
+    if(!debtCart.length){ wrap.innerHTML=''; return; }
+    let total=debtCart.reduce((s,x)=>s+x.price*x.qty,0);
+    wrap.innerHTML=debtCart.map((x,i)=>`<div class="dc-item"><span class="dc-name">${esc(x.name)}</span><span class="dc-sum">${fmt(x.price)}×${x.qty}</span><button class="dc-x" data-dcx="${i}">×</button></div>`).join('')
+      +`<div class="dc-total"><span>Итого</span><span>${fmt(total)} сум</span></div>`;
+  }
+  $('debtAddItem').addEventListener('click',()=>{
+    if(!debtPickedId){ $('debtSearchInput').focus(); return; }
+    const it=catalog.find(c=>c.id===debtPickedId); if(!it)return;
+    const q=parseFloat($('debtQty').value)||1;
+    const ex=debtCart.find(x=>x.id===it.id);
+    if(ex)ex.qty+=q; else debtCart.push({id:it.id,name:it.name,price:it.price,qty:q});
+    debtPickedId=null; showDebtPicked(); $('debtQty').value='1'; renderDebtCart();
+  });
+  $('debtCart').addEventListener('click',e=>{
+    const x=e.target.closest('[data-dcx]'); if(!x)return;
+    debtCart.splice(+x.dataset.dcx,1); renderDebtCart();
+  });
+  $('debtAddCatBtn').addEventListener('click',()=>{
+    const who=$('debtWho').value.trim();
+    if(!who){ $('debtWho').focus(); return; }
+    if(!debtCart.length){ $('debtSearchInput').focus(); return; }
+    let dateStr=$('debtDate2').value;
+    if(!dateStr){ const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+    const iso=new Date(dateStr+'T12:00:00').toISOString();
+    const amount=debtCart.reduce((s,x)=>s+x.price*x.qty,0);
+    const items=debtCart.map(x=>({name:x.name,qty:x.qty,price:x.price}));
+    debts.push({id:Date.now()+'',type:debtMode,who,note:'',amount,items,date:iso,done:false});
+    saveDebts();
+    debtCart=[]; $('debtWho').value=''; renderDebtCart(); renderDebt();
+    modal('Долг добавлен ✅','Долг на товары записан.','Ок',null,true);
+  });
+
+  $('debtAddBtn').addEventListener('click',()=>{
+    const amt=parseFloat($('debtAmount').value);
+    const who=$('debtWho').value.trim();
+    const note=$('debtNote').value.trim();
+    let dateStr=$('debtDate').value;
+    if(isNaN(amt)||amt<=0){ $('debtAmount').focus(); return; }
+    if(!who){ $('debtWho').focus(); return; }
+    if(!dateStr){ const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+    const iso=new Date(dateStr+'T12:00:00').toISOString();
+    debts.push({id:Date.now()+'',type:debtMode,who,note,amount:amt,date:iso,done:false});
+    saveDebts();
+    $('debtAmount').value=''; $('debtWho').value=''; $('debtNote').value='';
+    renderDebt();
+  });
+  $('debtList').addEventListener('click',e=>{
+    const dn=e.target.closest('[data-ddone]'); const dl=e.target.closest('[data-ddel]');
+    if(dn){ const d=debts.find(x=>x.id===dn.dataset.ddone); if(d){ d.done=true; d.closedDate=new Date().toISOString(); saveDebts(); renderDebt(); } return; }
+    if(dl){ modal('Удалить долг?','Запись будет удалена.','Удалить',()=>{ debts=debts.filter(x=>x.id!==dl.dataset.ddel); saveDebts(); renderDebt(); }); }
+  });
+  function setDebtDefaultDate(){ const t=new Date(); const s=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; $('debtDate').value=s; $('debtDate2').value=s; }
+
   function switchTab(t){
-    ['Buy','Plan','Cat','Cash','Hist','Mon'].forEach(x=>{ $('tab'+x).classList.toggle('active',x===t); $('panel'+x).classList.toggle('active',x===t); });
+    ['Buy','Plan','Cat','Cash','Debt','Hist','Mon'].forEach(x=>{ $('tab'+x).classList.toggle('active',x===t); $('panel'+x).classList.toggle('active',x===t); });
     if(t==='Hist')renderHist();
     if(t==='Mon')renderMon();
     if(t==='Plan'){ fillPlanSelect(); renderPlan(); }
     if(t==='Cash'){ setRevDefaultDate(); renderCash(); }
+    if(t==='Debt'){ setDebtDefaultDate(); renderDebt(); }
   }
   $('tabBuy').addEventListener('click',()=>switchTab('Buy'));
   $('tabPlan').addEventListener('click',()=>switchTab('Plan'));
   $('tabCat').addEventListener('click',()=>switchTab('Cat'));
   $('tabCash').addEventListener('click',()=>switchTab('Cash'));
+  $('tabDebt').addEventListener('click',()=>switchTab('Debt'));
   $('tabHist').addEventListener('click',()=>switchTab('Hist'));
   $('tabMon').addEventListener('click',()=>switchTab('Mon'));
 
