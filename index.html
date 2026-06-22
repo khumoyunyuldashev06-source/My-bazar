@@ -23,6 +23,25 @@
   }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   body { font-family:-apple-system,"SF Pro Text",system-ui,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; padding:calc(18px + env(safe-area-inset-top)) 18px calc(90px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; }
+  .auth-screen { position:fixed; inset:0; z-index:100; background:linear-gradient(170deg,#f4f1ea,#ece7dc); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
+  .auth-box { width:100%; max-width:360px; background:var(--card); border-radius:24px; padding:28px 24px; box-shadow:0 20px 50px rgba(43,37,32,.15); }
+  .auth-logo { width:64px; height:64px; margin:0 auto 14px; border-radius:18px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:34px; box-shadow:0 8px 20px rgba(200,84,30,.3); }
+  .auth-title { text-align:center; font-size:24px; font-weight:800; letter-spacing:-0.6px; }
+  .auth-sub { text-align:center; font-size:13px; color:var(--muted); margin:6px 0 20px; font-weight:500; line-height:1.4; }
+  .auth-tg { width:100%; background:#229ED9; color:#fff; border:none; border-radius:13px; padding:15px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 6px 16px rgba(34,158,217,.3); }
+  .auth-tg:active { transform:scale(.98); }
+  .auth-or { display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--muted); font-size:13px; font-weight:600; }
+  .auth-or::before, .auth-or::after { content:""; flex:1; height:1px; background:var(--line); }
+  .auth-tabs { display:flex; gap:4px; background:var(--bg2); border-radius:12px; padding:4px; margin-bottom:14px; }
+  .auth-tabs button { flex:1; background:transparent; border:none; color:var(--muted); font-size:14px; font-weight:700; padding:10px; border-radius:9px; cursor:pointer; font-family:inherit; }
+  .auth-tabs button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow); }
+  .auth-box input { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; font-size:16px; padding:14px 15px; outline:none; font-family:inherit; margin-bottom:11px; color:var(--ink); }
+  .auth-box input:focus { border-color:var(--accent); background:#fff; }
+  .auth-err { color:var(--red); font-size:13px; font-weight:600; margin-bottom:10px; min-height:18px; text-align:center; }
+  .auth-go { width:100%; background:var(--accent); color:#fff; border:none; border-radius:13px; padding:15px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 6px 16px rgba(200,84,30,.3); }
+  .auth-go:active { transform:scale(.98); }
+  .auth-foot { text-align:center; font-size:12px; color:var(--muted); margin-top:18px; font-weight:500; max-width:300px; }
+  .auth-screen.hidden { display:none; }
   header { margin-bottom:16px; }
   .title-row { display:flex; align-items:center; gap:10px; }
   .basket { width:42px; height:42px; flex-shrink:0; border-radius:13px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(200,84,30,.28); }
@@ -284,6 +303,13 @@
   .debt-amt.owe { color:var(--red); } .debt-amt.owed { color:var(--green); }
   .debt-actions { display:flex; gap:6px; flex-shrink:0; }
   .debt-done-btn { border:none; background:#e3f3e8; color:var(--green); width:32px; height:32px; border-radius:9px; font-size:15px; cursor:pointer; }
+  .debt-pay-btn { border:none; background:#fdf0e0; color:var(--accent); width:32px; height:32px; border-radius:9px; font-size:16px; font-weight:800; cursor:pointer; }
+  .debt-pay-btn:active, .debt-done-btn:active { transform:scale(.88); }
+  .debt-paid { font-size:12px; color:var(--muted); font-weight:600; margin-top:6px; }
+  .debt-bar { height:6px; background:var(--bg2); border-radius:4px; overflow:hidden; margin-top:4px; }
+  .debt-bar-fill { height:100%; background:var(--green); border-radius:4px; transition:width .4s ease; }
+  .pay-check { display:flex; align-items:center; gap:9px; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; padding:11px 14px; background:var(--bg); border-radius:11px; }
+  .pay-check input { width:20px; height:20px; accent-color:var(--accent); }
   .debt-del { border:none; background:var(--soft); color:var(--red); width:32px; height:32px; border-radius:9px; font-size:16px; cursor:pointer; }
   .debt-sep { font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:14px 3px 8px; }
   #debtSearchInput, #debtQty, #debtDate2 { width:100%; background:var(--bg); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
@@ -374,6 +400,29 @@
 </style>
 </head>
 <body>
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-box">
+      <div class="auth-logo">🧺</div>
+      <h2 class="auth-title">My Business</h2>
+      <p class="auth-sub">Учёт магазина: закупки, касса, прибыль, долги</p>
+
+      <button class="auth-tg" id="authTgBtn">✈️ Войти через Telegram</button>
+      <div class="auth-or"><span>или</span></div>
+
+      <div class="auth-tabs" id="authTabs">
+        <button data-at="login" class="active">Вход</button>
+        <button data-at="reg">Регистрация</button>
+      </div>
+
+      <input type="text" id="authLogin" placeholder="Имя (логин)" autocomplete="off">
+      <input type="password" id="authPass" placeholder="Пароль">
+      <input type="password" id="authPass2" placeholder="Повтори пароль" style="display:none">
+      <div class="auth-err" id="authErr"></div>
+      <button class="auth-go" id="authGoBtn">Войти</button>
+    </div>
+    <div class="auth-foot">Данные хранятся в облаке и привязаны к аккаунту</div>
+  </div>
+
   <header>
     <div class="title-row">
       <div class="basket">🧺</div>
@@ -615,16 +664,30 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="payModalBg">
+    <div class="modal">
+      <h3 id="payTitle">💵 Оплата долга</h3>
+      <p id="payText" style="margin-bottom:12px"></p>
+      <div class="field-label">Сколько оплачено</div>
+      <input type="number" id="payAmount" inputmode="decimal" placeholder="Сумма" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
+      <button class="add" id="payFullBtn" style="margin-top:0;background:var(--bg2);color:var(--ink);box-shadow:none">Оплатить весь остаток</button>
+      <div id="payCashWrap" style="margin-top:14px">
+        <label class="pay-check"><input type="checkbox" id="payToCash" checked> <span id="payCashLabel">Записать в Кассу как расход</span></label>
+      </div>
+      <div class="modal-btns" style="margin-top:16px">
+        <button class="mb-cancel" id="payCancel">Отмена</button>
+        <button class="mb-ok" id="payOk" style="background:var(--accent)">Оплатить</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-bg" id="accModalBg">
     <div class="modal">
-      <h3>👤 Аккаунт</h3>
-      <p style="margin-bottom:14px">Код доступа — это твой аккаунт. Введи один и тот же код на любом телефоне (и в Telegram, и в иконке с рабочего стола), чтобы везде были одни данные.</p>
-      <div class="field-label">Текущий аккаунт</div>
-      <div id="accCurrent" style="font-weight:800;font-size:15px;margin:4px 0 14px;padding:10px 14px;background:var(--bg);border-radius:11px"></div>
-      <div class="field-label">Код доступа</div>
-      <input type="text" id="accCodeInput" placeholder="напр. khumoyun" autocomplete="off" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
-      <button class="add" id="accSaveBtn" style="margin-top:0">Войти по коду</button>
-      <button class="mb-cancel" id="accImportBtn" style="width:100%;margin-top:8px">📥 Забрать данные из Telegram</button>
+      <h3>👤 Мой аккаунт</h3>
+      <div class="field-label">Вы вошли как</div>
+      <div id="accCurrent" style="font-weight:800;font-size:16px;margin:4px 0 16px;padding:12px 15px;background:var(--bg);border-radius:11px"></div>
+      <p style="margin-bottom:14px">Войди под этим же аккаунтом на другом телефоне, чтобы видеть свои данные везде.</p>
+      <button class="mb-cancel" id="accLogoutBtn" style="width:100%;margin-top:0;color:var(--red)">🚪 Выйти из аккаунта</button>
       <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px">Закрыть</button>
     </div>
   </div>
@@ -649,8 +712,8 @@
   // ===== Облако (Supabase) =====
   const SUPA_URL='https://aozmnrvdskcgkkpvcirk.supabase.co';
   const SUPA_KEY='sb_publishable_HukLaSRWjBH3CjhrQTGf2A_raw_xybO';
-  // user_id: 1) код доступа если задан, 2) Telegram, 3) устройство
-  let cloudUserId='', cloudTgId='';
+  // ===== Аккаунты =====
+  let cloudUserId='', cloudTgId='', cloudReady=false;
   (function(){
     try{
       const tg=window.Telegram&&window.Telegram.WebApp;
@@ -659,18 +722,65 @@
         if(u&&u.id) cloudTgId='tg_'+u.id;
       }
     }catch(e){}
-    const code=localStorage.getItem('bazar_account_code');
-    if(code){ cloudUserId='acc_'+code; }
-    else if(cloudTgId){ cloudUserId=cloudTgId; }
-    else {
-      let dev=localStorage.getItem('bazar_device_id');
-      if(!dev){ dev='dev_'+Date.now()+''+Math.floor(Math.random()*99999); localStorage.setItem('bazar_device_id',dev); }
-      cloudUserId=dev;
-    }
   })();
   function normCode(s){ return String(s).trim().toLowerCase().replace(/[^a-z0-9_]/g,''); }
-
-  let cloudSaveTimer=null, cloudReady=false;
+  // SHA-256 хеш пароля
+  async function hashPass(pass, login){
+    try{
+      const data=new TextEncoder().encode('mybiz_'+login+'_'+pass);
+      const buf=await crypto.subtle.digest('SHA-256',data);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){ return 'plain_'+login+'_'+pass; } // запасной вариант
+  }
+  // регистрация: создаём аккаунт в таблице accounts
+  async function authRegister(login, pass){
+    const lg=normCode(login);
+    if(lg.length<2)return {ok:false,msg:'Имя минимум 2 символа (буквы/цифры)'};
+    if(pass.length<4)return {ok:false,msg:'Пароль минимум 4 символа'};
+    try{
+      // проверяем, занят ли логин
+      const chk=await fetch(`${SUPA_URL}/rest/v1/accounts?login=eq.${encodeURIComponent(lg)}&select=login`,{
+        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
+      });
+      const ex=await chk.json();
+      if(ex&&ex.length)return {ok:false,msg:'Это имя уже занято'};
+      const hash=await hashPass(pass,lg);
+      const r=await fetch(`${SUPA_URL}/rest/v1/accounts`,{
+        method:'POST',
+        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
+        body:JSON.stringify({ login:lg, pass_hash:hash, created_at:new Date().toISOString() })
+      });
+      if(!r.ok)throw new Error('reg '+r.status);
+      return {ok:true, uid:'usr_'+lg};
+    }catch(e){ return {ok:false,msg:'Нет связи с сервером'}; }
+  }
+  // вход: проверяем логин+пароль
+  async function authLogin(login, pass){
+    const lg=normCode(login);
+    try{
+      const r=await fetch(`${SUPA_URL}/rest/v1/accounts?login=eq.${encodeURIComponent(lg)}&select=login,pass_hash`,{
+        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
+      });
+      const rows=await r.json();
+      if(!rows||!rows.length)return {ok:false,msg:'Аккаунт не найден'};
+      const hash=await hashPass(pass,lg);
+      if(rows[0].pass_hash!==hash)return {ok:false,msg:'Неверный пароль'};
+      return {ok:true, uid:'usr_'+lg};
+    }catch(e){ return {ok:false,msg:'Нет связи с сервером'}; }
+  }
+  // применить вход: сохранить и загрузить данные
+  async function applyLogin(uid){
+    cloudUserId=uid;
+    localStorage.setItem('bazar_session', uid);
+    document.getElementById('authScreen').classList.add('hidden');
+    cloudReady=false;
+    await cloudLoad();
+  }
+  function logout(){
+    localStorage.removeItem('bazar_session');
+    location.reload();
+  }
+  let cloudSaveTimer=null;
   function setSync(state){
     const b=document.getElementById('syncBadge'); if(!b)return;
     b.classList.remove('saving','error');
@@ -1587,9 +1697,10 @@
 
   // ===== Долги =====
   let debtMode='owe';
+  function debtRemaining(d){ return Math.max(0,(d.amount||0)-(d.paid||0)); }
   function renderDebt(){
-    const owe=debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+d.amount,0);
-    const owed=debts.filter(d=>d.type==='owed'&&!d.done).reduce((s,d)=>s+d.amount,0);
+    const owe=debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+debtRemaining(d),0);
+    const owed=debts.filter(d=>d.type==='owed'&&!d.done).reduce((s,d)=>s+debtRemaining(d),0);
     $('debtOwe').textContent=fmt(owe)+' сум';
     $('debtOwed').textContent=fmt(owed)+' сум';
     const list=$('debtList');
@@ -1604,12 +1715,23 @@
       if(d.items&&d.items.length){
         itemsHtml=`<div class="debt-meta" style="margin-top:4px">${d.items.map(x=>esc(x.name)+' ×'+x.qty).join(', ')}</div>`;
       }
+      const rem=debtRemaining(d);
+      const paid=d.paid||0;
+      // строка с остатком, если есть частичная оплата
+      let paidHtml='';
+      if(paid>0&&!d.done){
+        const pct=Math.round(paid/d.amount*100);
+        paidHtml=`<div class="debt-paid">Оплачено ${fmt(paid)} из ${fmt(d.amount)} · осталось ${fmt(rem)}
+          <div class="debt-bar"><div class="debt-bar-fill" style="width:${pct}%"></div></div></div>`;
+      }
+      const amtShow = d.done ? d.amount : rem;
       return `<div class="debt-item ${d.type} ${d.done?'done':''}">
         <div class="debt-info"><div class="debt-who">${esc(d.who||label)}${d.done?'<span class="done-tag">✓ закрыт</span>':''}</div>
-        <div class="debt-meta">${label}${d.note?' · '+esc(d.note):''} · ${dt.getDate()} ${MON[dt.getMonth()]}</div>${itemsHtml}</div>
-        <span class="debt-amt ${d.type}">${d.type==='owe'?'−':'+'} ${fmt(d.amount)}</span>
+        <div class="debt-meta">${label}${d.note?' · '+esc(d.note):''} · ${dt.getDate()} ${MON[dt.getMonth()]}</div>${itemsHtml}${paidHtml}</div>
+        <span class="debt-amt ${d.type}">${d.type==='owe'?'−':'+'} ${fmt(amtShow)}</span>
         <div class="debt-actions">
-          ${d.done?'':`<button class="debt-done-btn" data-ddone="${d.id}" title="Закрыть">✓</button>`}
+          ${d.done?'':`<button class="debt-pay-btn" data-dpay="${d.id}" title="Оплатить">₸</button>`}
+          ${d.done?'':`<button class="debt-done-btn" data-ddone="${d.id}" title="Закрыть полностью">✓</button>`}
           <button class="debt-del" data-ddel="${d.id}">×</button>
         </div></div>`;
     };
@@ -1705,9 +1827,56 @@
     renderDebt();
   });
   $('debtList').addEventListener('click',e=>{
+    const dp=e.target.closest('[data-dpay]');
     const dn=e.target.closest('[data-ddone]'); const dl=e.target.closest('[data-ddel]');
-    if(dn){ const d=debts.find(x=>x.id===dn.dataset.ddone); if(d){ d.done=true; d.closedDate=new Date().toISOString(); saveDebts(); renderDebt(); } return; }
+    if(dp){ const d=debts.find(x=>x.id===dp.dataset.dpay); if(d)openPay(d,false); return; }
+    if(dn){ const d=debts.find(x=>x.id===dn.dataset.ddone); if(d)openPay(d,true); return; }
     if(dl){ modal('Удалить долг?','Запись будет удалена.','Удалить',()=>{ debts=debts.filter(x=>x.id!==dl.dataset.ddel); saveDebts(); renderDebt(); }); }
+  });
+
+  // модалка оплаты долга
+  let payDebtId=null;
+  function openPay(d,fullClose){
+    payDebtId=d.id;
+    const rem=debtRemaining(d);
+    const isOwe=d.type==='owe';
+    $('payTitle').textContent=isOwe?'💵 Оплата моего долга':'💵 Возврат долга мне';
+    $('payText').textContent=`${esc(d.who)} · осталось ${fmt(rem)} сум`;
+    $('payAmount').value=fullClose?rem:'';
+    $('payCashLabel').textContent=isOwe?'Записать в Кассу как расход':'Записать в Кассу как выручку';
+    $('payToCash').checked=true;
+    $('payModalBg').classList.add('show');
+    if(!fullClose)setTimeout(()=>$('payAmount').focus(),100);
+  }
+  $('payFullBtn').addEventListener('click',()=>{
+    const d=debts.find(x=>x.id===payDebtId); if(!d)return;
+    $('payAmount').value=debtRemaining(d);
+  });
+  $('payCancel').addEventListener('click',()=>{ $('payModalBg').classList.remove('show'); payDebtId=null; });
+  $('payModalBg').addEventListener('click',e=>{ if(e.target===$('payModalBg')){ $('payModalBg').classList.remove('show'); payDebtId=null; } });
+  $('payOk').addEventListener('click',()=>{
+    const d=debts.find(x=>x.id===payDebtId); if(!d)return;
+    const pay=parseFloat($('payAmount').value);
+    const rem=debtRemaining(d);
+    if(isNaN(pay)||pay<=0){ $('payAmount').focus(); return; }
+    const realPay=Math.min(pay,rem);
+    d.paid=(d.paid||0)+realPay;
+    if(debtRemaining(d)<=0){ d.done=true; d.closedDate=new Date().toISOString(); }
+    // запись в Кассу
+    if($('payToCash').checked){
+      const iso=new Date().toISOString();
+      if(d.type==='owe'){
+        expenses.push({id:Date.now()+'',date:iso,amount:realPay,note:'Оплата долга: '+(d.who||'')});
+        saveExpenses();
+      } else {
+        const ds=iso.slice(0,10);
+        const same=revenue.find(r=>r.date.slice(0,10)===ds);
+        if(same)same.amount+=realPay; else revenue.push({id:Date.now()+'',date:iso,amount:realPay});
+        saveRevenue();
+      }
+    }
+    saveDebts(); renderDebt();
+    $('payModalBg').classList.remove('show'); payDebtId=null;
   });
   function setDebtDefaultDate(){ const t=new Date(); const s=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; $('debtDate').value=s; $('debtDate2').value=s; }
 
@@ -1798,47 +1967,76 @@
 
   // ===== Аккаунт =====
   function accLabel(){
-    if(cloudUserId.startsWith('acc_'))return 'Код: '+cloudUserId.slice(4);
-    if(cloudUserId.startsWith('tg_'))return 'Telegram-аккаунт';
-    return 'Это устройство (без кода)';
+    if(cloudUserId.startsWith('usr_'))return '👤 '+cloudUserId.slice(4);
+    if(cloudUserId.startsWith('tg_'))return '✈️ Telegram-аккаунт';
+    return cloudUserId;
   }
   function openAcc(){
     $('accCurrent').textContent=accLabel();
-    const code=localStorage.getItem('bazar_account_code')||'';
-    $('accCodeInput').value=code;
-    $('accImportBtn').style.display=cloudTgId?'block':'none';
     $('accModalBg').classList.add('show');
   }
   $('accBtn').addEventListener('click',openAcc);
   $('accClose').addEventListener('click',()=>$('accModalBg').classList.remove('show'));
   $('accModalBg').addEventListener('click',e=>{ if(e.target===$('accModalBg'))$('accModalBg').classList.remove('show'); });
-  $('accSaveBtn').addEventListener('click',async()=>{
-    const code=normCode($('accCodeInput').value);
-    if(!code){ $('accCodeInput').focus(); return; }
-    $('accSaveBtn').textContent='Вхожу...';
-    const res=await switchToCode(code);
-    $('accSaveBtn').textContent='Войти по коду';
-    if(res.ok){
-      $('accCurrent').textContent=accLabel();
-      modal(res.hadData?'Готово ✅':'Аккаунт создан ✅',
-            res.hadData?'Данные этого кода загружены.':'Новый аккаунт по коду «'+code+'». Текущие данные сохранены в него.','Ок',null,true);
-      $('accModalBg').classList.remove('show');
-    } else {
-      modal('Ошибка',res.msg||'Не удалось','Ок',null,true);
-    }
-  });
-  $('accImportBtn').addEventListener('click',async()=>{
-    $('accImportBtn').textContent='Переношу...';
-    const res=await importFromTelegram();
-    $('accImportBtn').textContent='📥 Забрать данные из Telegram';
-    if(res.ok){ modal('Перенесено ✅','Данные из Telegram теперь в этом аккаунте.','Ок',null,true); $('accModalBg').classList.remove('show'); }
-    else { modal('Не вышло',res.msg||'Ошибка','Ок',null,true); }
+  $('accLogoutBtn').addEventListener('click',()=>{
+    modal('Выйти из аккаунта?','Данные останутся в облаке. Войдёшь снова — увидишь их.','Выйти',()=>{ logout(); });
   });
 
+  // ===== Экран входа: обработчики =====
+  let authMode='login';
+  $('authTabs').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-at]'); if(!b)return;
+    authMode=b.dataset.at;
+    [...$('authTabs').children].forEach(x=>x.classList.toggle('active',x===b));
+    $('authPass2').style.display=authMode==='reg'?'block':'none';
+    $('authGoBtn').textContent=authMode==='reg'?'Создать аккаунт':'Войти';
+    $('authErr').textContent='';
+  });
+  $('authGoBtn').addEventListener('click',async()=>{
+    const login=$('authLogin').value, pass=$('authPass').value;
+    $('authErr').textContent='';
+    if(authMode==='reg'){
+      if($('authPass').value!==$('authPass2').value){ $('authErr').textContent='Пароли не совпадают'; return; }
+      $('authGoBtn').textContent='Создаю...';
+      const res=await authRegister(login,pass);
+      $('authGoBtn').textContent='Создать аккаунт';
+      if(!res.ok){ $('authErr').textContent=res.msg; return; }
+      await applyLogin(res.uid);
+    } else {
+      $('authGoBtn').textContent='Вхожу...';
+      const res=await authLogin(login,pass);
+      $('authGoBtn').textContent='Войти';
+      if(!res.ok){ $('authErr').textContent=res.msg; return; }
+      await applyLogin(res.uid);
+    }
+  });
+  $('authTgBtn').addEventListener('click',async()=>{
+    if(!cloudTgId){ $('authErr').textContent='Открой приложение через Telegram'; return; }
+    $('authTgBtn').textContent='Вхожу...';
+    await applyLogin(cloudTgId);
+  });
+
+  // первичный рендер (под экраном входа)
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist();
-  cloudLoad();
+
+  // проверка сессии при старте
+  (async function(){
+    const saved=localStorage.getItem('bazar_session');
+    if(saved){
+      // уже входил — сразу заходим
+      cloudUserId=saved;
+      $('authScreen').classList.add('hidden');
+      await cloudLoad();
+    } else if(cloudTgId){
+      // открыто через Telegram, нет сессии — входим автоматически по Telegram
+      await applyLogin(cloudTgId);
+    } else {
+      // показываем экран входа (он уже виден по умолчанию)
+      $('authScreen').classList.remove('hidden');
+    }
+  })();
 </script>
 </body>
 </html>
