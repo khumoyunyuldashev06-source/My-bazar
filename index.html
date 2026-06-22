@@ -400,29 +400,6 @@
 </style>
 </head>
 <body>
-  <div class="auth-screen" id="authScreen">
-    <div class="auth-box">
-      <div class="auth-logo">🧺</div>
-      <h2 class="auth-title">My Business</h2>
-      <p class="auth-sub">Учёт магазина: закупки, касса, прибыль, долги</p>
-
-      <button class="auth-tg" id="authTgBtn">✈️ Войти через Telegram</button>
-      <div class="auth-or"><span>или</span></div>
-
-      <div class="auth-tabs" id="authTabs">
-        <button data-at="login" class="active">Вход</button>
-        <button data-at="reg">Регистрация</button>
-      </div>
-
-      <input type="text" id="authLogin" placeholder="Имя (логин)" autocomplete="off">
-      <input type="password" id="authPass" placeholder="Пароль">
-      <input type="password" id="authPass2" placeholder="Повтори пароль" style="display:none">
-      <div class="auth-err" id="authErr"></div>
-      <button class="auth-go" id="authGoBtn">Войти</button>
-    </div>
-    <div class="auth-foot">Данные хранятся в облаке и привязаны к аккаунту</div>
-  </div>
-
   <header>
     <div class="title-row">
       <div class="basket">🧺</div>
@@ -683,11 +660,14 @@
 
   <div class="modal-bg" id="accModalBg">
     <div class="modal">
-      <h3>👤 Мой аккаунт</h3>
-      <div class="field-label">Вы вошли как</div>
-      <div id="accCurrent" style="font-weight:800;font-size:16px;margin:4px 0 16px;padding:12px 15px;background:var(--bg);border-radius:11px"></div>
-      <p style="margin-bottom:14px">Войди под этим же аккаунтом на другом телефоне, чтобы видеть свои данные везде.</p>
-      <button class="mb-cancel" id="accLogoutBtn" style="width:100%;margin-top:0;color:var(--red)">🚪 Выйти из аккаунта</button>
+      <h3>👤 Аккаунт</h3>
+      <div class="field-label">Текущий аккаунт</div>
+      <div id="accCurrent" style="font-weight:800;font-size:15px;margin:4px 0 14px;padding:10px 14px;background:var(--bg);border-radius:11px"></div>
+      <p style="margin-bottom:12px">Код доступа = твой аккаунт. Введи один код на всех телефонах (и в Telegram, и в иконке), чтобы данные были везде одни.</p>
+      <div class="field-label">Код доступа</div>
+      <input type="text" id="accCodeInput" placeholder="напр. khumoyun" autocomplete="off" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
+      <button class="add" id="accSaveBtn" style="margin-top:0">Войти по коду</button>
+      <button class="mb-cancel" id="accImportBtn" style="width:100%;margin-top:8px">📥 Забрать данные из Telegram</button>
       <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px">Закрыть</button>
     </div>
   </div>
@@ -712,7 +692,7 @@
   // ===== Облако (Supabase) =====
   const SUPA_URL='https://aozmnrvdskcgkkpvcirk.supabase.co';
   const SUPA_KEY='sb_publishable_HukLaSRWjBH3CjhrQTGf2A_raw_xybO';
-  // ===== Аккаунты =====
+  // user_id: 1) код доступа если задан, 2) Telegram, 3) устройство
   let cloudUserId='', cloudTgId='', cloudReady=false;
   (function(){
     try{
@@ -722,64 +702,16 @@
         if(u&&u.id) cloudTgId='tg_'+u.id;
       }
     }catch(e){}
+    const code=localStorage.getItem('bazar_account_code');
+    if(code){ cloudUserId='acc_'+code; }
+    else if(cloudTgId){ cloudUserId=cloudTgId; }
+    else {
+      let dev=localStorage.getItem('bazar_device_id');
+      if(!dev){ dev='dev_'+Date.now()+''+Math.floor(Math.random()*99999); localStorage.setItem('bazar_device_id',dev); }
+      cloudUserId=dev;
+    }
   })();
   function normCode(s){ return String(s).trim().toLowerCase().replace(/[^a-z0-9_]/g,''); }
-  // SHA-256 хеш пароля
-  async function hashPass(pass, login){
-    try{
-      const data=new TextEncoder().encode('mybiz_'+login+'_'+pass);
-      const buf=await crypto.subtle.digest('SHA-256',data);
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    }catch(e){ return 'plain_'+login+'_'+pass; } // запасной вариант
-  }
-  // регистрация: создаём аккаунт в таблице accounts
-  async function authRegister(login, pass){
-    const lg=normCode(login);
-    if(lg.length<2)return {ok:false,msg:'Имя минимум 2 символа (буквы/цифры)'};
-    if(pass.length<4)return {ok:false,msg:'Пароль минимум 4 символа'};
-    try{
-      // проверяем, занят ли логин
-      const chk=await fetch(`${SUPA_URL}/rest/v1/accounts?login=eq.${encodeURIComponent(lg)}&select=login`,{
-        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
-      });
-      const ex=await chk.json();
-      if(ex&&ex.length)return {ok:false,msg:'Это имя уже занято'};
-      const hash=await hashPass(pass,lg);
-      const r=await fetch(`${SUPA_URL}/rest/v1/accounts`,{
-        method:'POST',
-        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY, 'Content-Type':'application/json' },
-        body:JSON.stringify({ login:lg, pass_hash:hash, created_at:new Date().toISOString() })
-      });
-      if(!r.ok)throw new Error('reg '+r.status);
-      return {ok:true, uid:'usr_'+lg};
-    }catch(e){ return {ok:false,msg:'Нет связи с сервером'}; }
-  }
-  // вход: проверяем логин+пароль
-  async function authLogin(login, pass){
-    const lg=normCode(login);
-    try{
-      const r=await fetch(`${SUPA_URL}/rest/v1/accounts?login=eq.${encodeURIComponent(lg)}&select=login,pass_hash`,{
-        headers:{ apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }
-      });
-      const rows=await r.json();
-      if(!rows||!rows.length)return {ok:false,msg:'Аккаунт не найден'};
-      const hash=await hashPass(pass,lg);
-      if(rows[0].pass_hash!==hash)return {ok:false,msg:'Неверный пароль'};
-      return {ok:true, uid:'usr_'+lg};
-    }catch(e){ return {ok:false,msg:'Нет связи с сервером'}; }
-  }
-  // применить вход: сохранить и загрузить данные
-  async function applyLogin(uid){
-    cloudUserId=uid;
-    localStorage.setItem('bazar_session', uid);
-    document.getElementById('authScreen').classList.add('hidden');
-    cloudReady=false;
-    await cloudLoad();
-  }
-  function logout(){
-    localStorage.removeItem('bazar_session');
-    location.reload();
-  }
   let cloudSaveTimer=null;
   function setSync(state){
     const b=document.getElementById('syncBadge'); if(!b)return;
@@ -1967,76 +1899,44 @@
 
   // ===== Аккаунт =====
   function accLabel(){
-    if(cloudUserId.startsWith('usr_'))return '👤 '+cloudUserId.slice(4);
+    if(cloudUserId.startsWith('acc_'))return 'Код: '+cloudUserId.slice(4);
     if(cloudUserId.startsWith('tg_'))return '✈️ Telegram-аккаунт';
-    return cloudUserId;
+    return 'Это устройство (без кода)';
   }
   function openAcc(){
     $('accCurrent').textContent=accLabel();
+    $('accCodeInput').value=localStorage.getItem('bazar_account_code')||'';
+    $('accImportBtn').style.display=cloudTgId?'block':'none';
     $('accModalBg').classList.add('show');
   }
   $('accBtn').addEventListener('click',openAcc);
   $('accClose').addEventListener('click',()=>$('accModalBg').classList.remove('show'));
   $('accModalBg').addEventListener('click',e=>{ if(e.target===$('accModalBg'))$('accModalBg').classList.remove('show'); });
-  $('accLogoutBtn').addEventListener('click',()=>{
-    modal('Выйти из аккаунта?','Данные останутся в облаке. Войдёшь снова — увидишь их.','Выйти',()=>{ logout(); });
+  $('accSaveBtn').addEventListener('click',async()=>{
+    const code=normCode($('accCodeInput').value);
+    if(!code){ $('accCodeInput').focus(); return; }
+    $('accSaveBtn').textContent='Вхожу...';
+    const res=await switchToCode(code);
+    $('accSaveBtn').textContent='Войти по коду';
+    if(res.ok){
+      $('accCurrent').textContent=accLabel();
+      modal(res.hadData?'Готово ✅':'Аккаунт создан ✅',
+            res.hadData?'Данные этого кода загружены.':'Новый аккаунт по коду «'+code+'». Текущие данные сохранены в него.','Ок',null,true);
+      $('accModalBg').classList.remove('show');
+    } else { modal('Ошибка',res.msg||'Не удалось','Ок',null,true); }
+  });
+  $('accImportBtn').addEventListener('click',async()=>{
+    $('accImportBtn').textContent='Переношу...';
+    const res=await importFromTelegram();
+    $('accImportBtn').textContent='📥 Забрать данные из Telegram';
+    if(res.ok){ modal('Перенесено ✅','Данные из Telegram теперь в этом аккаунте.','Ок',null,true); $('accModalBg').classList.remove('show'); }
+    else { modal('Не вышло',res.msg||'Ошибка','Ок',null,true); }
   });
 
-  // ===== Экран входа: обработчики =====
-  let authMode='login';
-  $('authTabs').addEventListener('click',e=>{
-    const b=e.target.closest('button[data-at]'); if(!b)return;
-    authMode=b.dataset.at;
-    [...$('authTabs').children].forEach(x=>x.classList.toggle('active',x===b));
-    $('authPass2').style.display=authMode==='reg'?'block':'none';
-    $('authGoBtn').textContent=authMode==='reg'?'Создать аккаунт':'Войти';
-    $('authErr').textContent='';
-  });
-  $('authGoBtn').addEventListener('click',async()=>{
-    const login=$('authLogin').value, pass=$('authPass').value;
-    $('authErr').textContent='';
-    if(authMode==='reg'){
-      if($('authPass').value!==$('authPass2').value){ $('authErr').textContent='Пароли не совпадают'; return; }
-      $('authGoBtn').textContent='Создаю...';
-      const res=await authRegister(login,pass);
-      $('authGoBtn').textContent='Создать аккаунт';
-      if(!res.ok){ $('authErr').textContent=res.msg; return; }
-      await applyLogin(res.uid);
-    } else {
-      $('authGoBtn').textContent='Вхожу...';
-      const res=await authLogin(login,pass);
-      $('authGoBtn').textContent='Войти';
-      if(!res.ok){ $('authErr').textContent=res.msg; return; }
-      await applyLogin(res.uid);
-    }
-  });
-  $('authTgBtn').addEventListener('click',async()=>{
-    if(!cloudTgId){ $('authErr').textContent='Открой приложение через Telegram'; return; }
-    $('authTgBtn').textContent='Вхожу...';
-    await applyLogin(cloudTgId);
-  });
-
-  // первичный рендер (под экраном входа)
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist();
-
-  // проверка сессии при старте
-  (async function(){
-    const saved=localStorage.getItem('bazar_session');
-    if(saved){
-      // уже входил — сразу заходим
-      cloudUserId=saved;
-      $('authScreen').classList.add('hidden');
-      await cloudLoad();
-    } else if(cloudTgId){
-      // открыто через Telegram, нет сессии — входим автоматически по Telegram
-      await applyLogin(cloudTgId);
-    } else {
-      // показываем экран входа (он уже виден по умолчанию)
-      $('authScreen').classList.remove('hidden');
-    }
-  })();
+  cloudLoad();
 </script>
 </body>
 </html>
