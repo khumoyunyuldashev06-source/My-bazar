@@ -42,6 +42,14 @@
   .auth-go:active { transform:scale(.98); }
   .auth-foot { text-align:center; font-size:12px; color:var(--muted); margin-top:18px; font-weight:500; max-width:300px; }
   .auth-screen.hidden { display:none; }
+  .phone-screen { position:fixed; inset:0; z-index:90; background:var(--bg); overflow-y:auto; padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom)); display:none; max-width:560px; margin:0 auto; }
+  .phone-screen.show { display:block; }
+  .phone-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .ph-back { background:var(--card); border:none; box-shadow:var(--shadow); border-radius:11px; padding:9px 14px; font-size:15px; font-weight:700; color:var(--accent); cursor:pointer; font-family:inherit; }
+  .ph-title { font-size:18px; font-weight:800; }
+  #phoneNote, #phoneDate, #phoneAmount { width:100%; background:var(--bg2); border:1.5px solid transparent; border-radius:12px; color:var(--ink); font-size:16px; padding:13px 15px; outline:none; font-family:inherit; }
+  #phoneDate { font-size:15px; padding:13px 12px; }
+  #phoneNote:focus, #phoneDate:focus, #phoneAmount:focus { border-color:var(--accent); background:#fff; }
   header { margin-bottom:16px; }
   .title-row { display:flex; align-items:center; gap:10px; }
   .basket { width:42px; height:42px; flex-shrink:0; border-radius:13px; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(200,84,30,.28); }
@@ -85,6 +93,10 @@
   .bd-fill { height:100%; border-radius:5px; transition:width .5s ease; }
   .save-bazar { margin-top:14px; width:100%; background:rgba(255,255,255,.14); color:#fff; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
   .save-bazar:active { background:rgba(255,255,255,.26); }
+  .card-actions { display:flex; gap:8px; margin-top:8px; }
+  .card-actions button { flex:1; background:rgba(255,255,255,.1); color:#fff; border:none; border-radius:11px; padding:11px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .card-actions button:active { background:rgba(255,255,255,.22); }
+  #resetBtnTop { color:#ff9b85; }
 
   .panel { display:none; }
   .panel.active { display:block; animation:fade .25s ease; }
@@ -105,6 +117,12 @@
 
   .cat-group-label { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin:18px 3px 9px; display:flex; align-items:center; gap:7px; }
   .cat-group-label:first-of-type { margin-top:4px; }
+  .cat-collapse { cursor:pointer; user-select:none; }
+  .cat-sum { margin-left:auto; font-size:13px; font-weight:800; color:var(--ink); text-transform:none; letter-spacing:0; }
+  .cat-arrow { margin-left:8px; font-size:12px; transition:transform .2s; color:var(--muted); }
+  .cat-collapse .cat-sum + .cat-arrow { margin-left:8px; }
+  .cat-arrow.closed { transform:rotate(-90deg); }
+  .cat-collapse:not(:has(.cat-sum)) .cat-arrow { margin-left:auto; }
   .cat-group-label .dot { width:8px; height:8px; border-radius:50%; }
 
   .list { display:flex; flex-direction:column; gap:10px; }
@@ -404,55 +422,61 @@
     <div class="auth-box">
       <div class="auth-logo">🧺</div>
       <h2 class="auth-title">My Business</h2>
-      <p class="auth-sub">Учёт магазина: закупки, касса, прибыль, долги</p>
-      <button class="auth-tg" id="authTgBtn">✈️ Войти через Telegram</button>
+      <p class="auth-sub" data-ru="Учёт магазина: закупки, касса, прибыль, долги">Учёт магазина: закупки, касса, прибыль, долги</p>
+      <button class="auth-tg" id="authTgBtn" data-ru="✈️ Войти через Telegram">✈️ Войти через Telegram</button>
       <div class="auth-or"><span>или</span></div>
       <div class="auth-tabs" id="authTabs">
-        <button data-at="login" class="active">Вход</button>
-        <button data-at="reg">Регистрация</button>
+        <button data-at="login" class="active" data-ru="Вход">Вход</button>
+        <button data-at="reg" data-ru="Регистрация">Регистрация</button>
       </div>
-      <input type="text" id="authLogin" placeholder="Имя (логин)" autocomplete="off">
-      <input type="password" id="authPass" placeholder="Пароль">
-      <input type="password" id="authPass2" placeholder="Повтори пароль" style="display:none">
+      <input type="text" id="authLogin" placeholder="Имя (логин)" data-ru="Имя (логин)" autocomplete="off">
+      <input type="password" id="authPass" placeholder="Пароль" data-ru="Пароль">
+      <input type="password" id="authPass2" placeholder="Повтори пароль" data-ru="Повтори пароль" style="display:none">
       <div class="auth-err" id="authErr"></div>
-      <button class="auth-go" id="authGoBtn">Войти</button>
+      <button class="auth-go" id="authGoBtn" data-ru="Войти">Войти</button>
     </div>
-    <div class="auth-foot">Данные хранятся в облаке и привязаны к аккаунту</div>
+    <div class="auth-foot" data-ru="Данные хранятся в облаке и привязаны к аккаунту">Данные хранятся в облаке и привязаны к аккаунту</div>
   </div>
 
   <header>
     <div class="title-row">
       <div class="basket">🧺</div>
       <div style="flex:1"><h1>My Business</h1><span class="date" id="today"></span></div>
+      <button class="acc-btn" id="phoneBtn" title="Телефон">📞</button>
+      <button class="acc-btn" id="langBtn" title="Язык">🇷🇺</button>
       <button class="acc-btn" id="accBtn" title="Аккаунт">👤</button>
       <div class="sync-badge" id="syncBadge" title="Синхронизация">☁️</div>
     </div>
   </header>
 
   <nav class="bottom-nav">
-    <button id="tabBuy" class="active"><span class="bn-ic">🧺</span><span class="bn-lb">Базар</span></button>
-    <button id="tabPlan"><span class="bn-ic">📝</span><span class="bn-lb">Планы</span></button>
-    <button id="tabCat"><span class="bn-ic">📦</span><span class="bn-lb">Каталог</span></button>
-    <button id="tabCash"><span class="bn-ic">💰</span><span class="bn-lb">Касса</span></button>
-    <button id="tabHist"><span class="bn-ic">🕘</span><span class="bn-lb">История</span></button>
-    <button id="tabDebt"><span class="bn-ic">🤝</span><span class="bn-lb">Долги</span></button>
-    <button id="tabMon"><span class="bn-ic">📊</span><span class="bn-lb">Монитор</span></button>
+    <button id="tabBuy" class="active"><span class="bn-ic">🧺</span><span class="bn-lb" data-ru="Базар">Базар</span></button>
+    <button id="tabPlan"><span class="bn-ic">📝</span><span class="bn-lb" data-ru="Планы">Планы</span></button>
+    <button id="tabCat"><span class="bn-ic">📦</span><span class="bn-lb" data-ru="Каталог">Каталог</span></button>
+    <button id="tabCash"><span class="bn-ic">💰</span><span class="bn-lb" data-ru="Касса">Касса</span></button>
+    <button id="tabHist"><span class="bn-ic">🕘</span><span class="bn-lb" data-ru="История">История</span></button>
+    <button id="tabDebt"><span class="bn-ic">🤝</span><span class="bn-lb" data-ru="Долги">Долги</span></button>
+    <button id="tabMon"><span class="bn-ic">📊</span><span class="bn-lb" data-ru="Монитор">Монитор</span></button>
   </nav>
 
   <div class="panel active" id="panelBuy">
     <div class="total-card">
-      <div class="total-label">Итого за базар</div>
+      <div class="total-label" data-ru="Итого за базар">Итого за базар</div>
       <div class="total-value" id="total">0 <small>сум</small></div>
       <div class="total-meta" id="meta"></div>
       <div id="compareWrap"></div>
       <div id="buyBreakdown"></div>
-      <button class="save-bazar" id="saveBazarBtn">💾 Сохранить базар в историю</button>
+      <button class="save-bazar" id="saveBazarBtn" data-ru="💾 Сохранить базар в историю">💾 Сохранить базар в историю</button>
+      <div class="card-actions">
+        <button id="copyBtnTop" data-ru="📋 Скопировать">📋 Скопировать</button>
+        <button id="resetBtnTop" data-ru="↺ Сбросить">↺ Сбросить</button>
+      </div>
     </div>
-    <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..."><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
+    <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
     <div id="buyGroups"></div>
     <div class="actions">
-      <button id="copyBtn">📋 Скопировать</button>
-      <button class="clear" id="resetBtn">↺ Сбросить</button>
+      <button id="copyBtn" data-ru="📋 Скопировать">📋 Скопировать</button>
+      <button class="clear" id="resetBtn" data-ru="↺ Сбросить">↺ Сбросить</button>
     </div>
   </div>
 
@@ -472,12 +496,12 @@
       <button class="add" id="addBtn">Добавить в каталог</button>
       <button class="cancel-edit" id="cancelEditBtn" style="display:none">Отменить редактирование</button>
     </div>
-    <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="searchInput" placeholder="Поиск по каталогу..."><button class="search-clear" id="searchClear" style="display:none">×</button></div>
+    <div class="search-box"><span class="search-ic">🔍</span><input type="text" id="searchInput" placeholder="Поиск по каталогу..." data-ru="Поиск по каталогу..."><button class="search-clear" id="searchClear" style="display:none">×</button></div>
     <div class="sort-row" id="sortRow">
-      <span class="sort-lbl">Сортировка:</span>
-      <button data-sort="added" class="active">Как добавил</button>
-      <button data-sort="name">По имени</button>
-      <button data-sort="price">По цене</button>
+      <span class="sort-lbl" data-ru="Сортировка:">Сортировка:</span>
+      <button data-sort="added" class="active" data-ru="Как добавил">Как добавил</button>
+      <button data-sort="name" data-ru="По имени">По имени</button>
+      <button data-sort="price" data-ru="По цене">По цене</button>
     </div>
     <div id="catGroups"></div>
   </div>
@@ -502,10 +526,11 @@
       </div>
     </div>
     <div class="mon-seg" id="monSeg">
-      <button data-mp="3" class="active">3 мес</button>
-      <button data-mp="6">6 мес</button>
-      <button data-mp="12">Год</button>
-      <button data-mp="0">Всё</button>
+      <button data-mp="1" class="active" data-ru="Месяц">Месяц</button>
+      <button data-mp="3" data-ru="3 мес">3 мес</button>
+      <button data-mp="6" data-ru="6 мес">6 мес</button>
+      <button data-mp="12" data-ru="Год">Год</button>
+      <button data-mp="0" data-ru="Всё">Всё</button>
     </div>
     <div class="analytics">
       <h4>📊 Доход и расход по месяцам</h4>
@@ -521,26 +546,26 @@
 
   <div class="panel" id="panelDebt">
     <div class="debt-cards">
-      <div class="debt-sum owe"><div class="ds-l">Я должен</div><div class="ds-v" id="debtOwe">0</div></div>
-      <div class="debt-sum owed"><div class="ds-l">Мне должны</div><div class="ds-v" id="debtOwed">0</div></div>
+      <div class="debt-sum owe"><div class="ds-l" data-ru="Я должен">Я должен</div><div class="ds-v" id="debtOwe">0</div></div>
+      <div class="debt-sum owed"><div class="ds-l" data-ru="Мне должны">Мне должны</div><div class="ds-v" id="debtOwed">0</div></div>
     </div>
     <div class="add-form">
       <div class="plan-tabs" id="debtMode">
-        <button data-dm="owe" class="active">Я должен</button>
-        <button data-dm="owed">Мне должны</button>
+        <button data-dm="owe" class="active" data-ru="Я должен">Я должен</button>
+        <button data-dm="owed" data-ru="Мне должны">Мне должны</button>
       </div>
-      <input type="text" id="debtWho" placeholder="Кому / кто (имя поставщика, покупателя)" style="margin-bottom:10px">
+      <input type="text" id="debtWho" placeholder="Кому / кто (имя поставщика, покупателя)" data-ru="Кому / кто (имя поставщика, покупателя)" style="margin-bottom:10px">
       <div class="plan-tabs" id="debtKind">
-        <button data-dk="sum" class="active">💵 Сумма</button>
-        <button data-dk="cat">📦 Из каталога</button>
+        <button data-dk="sum" class="active" data-ru="💵 Сумма">💵 Сумма</button>
+        <button data-dk="cat" data-ru="📦 Из каталога">📦 Из каталога</button>
       </div>
       <div id="debtSumMode">
-        <input type="text" id="debtNote" placeholder="За что (необязательно)" style="margin-bottom:10px">
+        <input type="text" id="debtNote" placeholder="За что (необязательно)" data-ru="За что (необязательно)" style="margin-bottom:10px">
         <div class="row2">
           <div style="flex:1.3"><input type="date" id="debtDate"></div>
-          <div style="flex:1.7"><input type="number" id="debtAmount" placeholder="Сумма" inputmode="decimal"></div>
+          <div style="flex:1.7"><input type="number" id="debtAmount" placeholder="Сумма" data-ru="Сумма" inputmode="decimal"></div>
         </div>
-        <button class="add" id="debtAddBtn">Добавить долг</button>
+        <button class="add" id="debtAddBtn" data-ru="Добавить долг">Добавить долг</button>
       </div>
       <div id="debtCatMode" style="display:none">
         <div class="plan-search-wrap">
@@ -550,11 +575,11 @@
         <div class="debt-cart" id="debtCart"></div>
         <div class="plan-picked" id="debtPicked" style="display:none"></div>
         <div class="row2" style="margin-top:10px">
-          <div style="flex:1"><input type="number" id="debtQty" placeholder="Сколько" inputmode="decimal" value="1"></div>
-          <button class="add" id="debtAddItem" style="flex:1;margin-top:0">＋ В долг</button>
+          <div style="flex:1"><input type="number" id="debtQty" placeholder="Сколько" data-ru="Сколько" inputmode="decimal" value="1"></div>
+          <button class="add" id="debtAddItem" style="flex:1;margin-top:0" data-ru="＋ В долг">＋ В долг</button>
         </div>
         <input type="date" id="debtDate2" style="margin-top:10px">
-        <button class="add" id="debtAddCatBtn" style="margin-top:10px">Записать долг на сумму</button>
+        <button class="add" id="debtAddCatBtn" style="margin-top:10px" data-ru="Записать долг на сумму">Записать долг на сумму</button>
       </div>
     </div>
     <div class="list" id="debtList"></div>
@@ -565,13 +590,13 @@
       <div class="plan-l">📝 План на следующий базар</div>
       <div class="plan-v" id="planTotal">—</div>
       <div class="plan-s" id="planSub">Запиши, что нужно купить</div>
-      <button class="plan-tobuy" id="planToBuyBtn">🧺 Перенести в Базар</button>
+      <button class="plan-tobuy" id="planToBuyBtn" data-ru="🧺 Перенести в Базар">🧺 Перенести в Базар</button>
     </div>
 
     <div class="add-form">
       <div class="plan-tabs" id="planMode">
-        <button data-pm="cat" class="active">Из каталога</button>
-        <button data-pm="note">Заметка</button>
+        <button data-pm="cat" class="active" data-ru="Из каталога">Из каталога</button>
+        <button data-pm="note" data-ru="Заметка">Заметка</button>
       </div>
       <div id="planCatMode">
         <div class="plan-search-wrap">
@@ -580,44 +605,44 @@
         </div>
         <div class="plan-picked" id="planPicked" style="display:none"></div>
         <div class="row2" style="margin-top:10px">
-          <div style="flex:2"><input type="number" id="planQty" placeholder="Сколько" inputmode="decimal" value="1"></div>
-          <button class="add" id="planAddCat" style="flex:1;margin-top:0">Добавить</button>
+          <div style="flex:2"><input type="number" id="planQty" placeholder="Сколько" data-ru="Сколько" inputmode="decimal" value="1"></div>
+          <button class="add" id="planAddCat" style="flex:1;margin-top:0" data-ru="Добавить">Добавить</button>
         </div>
       </div>
       <div id="planNoteMode" style="display:none">
-        <input type="text" id="planNoteInput" placeholder="Напр.: спросить цену на сахар">
-        <button class="add" id="planAddNote" style="margin-top:0">Добавить заметку</button>
+        <input type="text" id="planNoteInput" placeholder="Напр.: спросить цену на сахар" data-ru="Напр.: спросить цену на сахар">
+        <button class="add" id="planAddNote" style="margin-top:0" data-ru="Добавить заметку">Добавить заметку</button>
       </div>
     </div>
 
     <div class="list" id="planList"></div>
     <div class="actions" id="planActions" style="display:none">
-      <button id="planCopyBtn">📋 Скопировать</button>
-      <button class="clear" id="planClearBtn">🗑 Очистить план</button>
+      <button id="planCopyBtn" data-ru="📋 Скопировать">📋 Скопировать</button>
+      <button class="clear" id="planClearBtn" data-ru="🗑 Очистить план">🗑 Очистить план</button>
     </div>
   </div>
 
   <div class="panel" id="panelCash">
     <div class="cash-card">
-      <div class="cash-l">Прибыль за период</div>
+      <div class="cash-l" data-ru="Прибыль за период">Прибыль за период</div>
       <div class="cash-v" id="cashProfit">0 <span>сум</span></div>
       <div class="cash-breakdown">
-        <div class="cb-item"><span class="cb-dot" style="background:#3ecf8e"></span><span class="cb-name">Выручка</span><span class="cb-val" id="cashRev">0</span></div>
-        <div class="cb-item"><span class="cb-dot" style="background:#e07b3a"></span><span class="cb-name">Закупка базара</span><span class="cb-val" id="cashExp">0</span></div>
-        <div class="cb-item"><span class="cb-dot" style="background:#d98b3a"></span><span class="cb-name">Прочие расходы</span><span class="cb-val" id="cashOther">0</span></div>
+        <div class="cb-item"><span class="cb-dot" style="background:#3ecf8e"></span><span class="cb-name" data-ru="Выручка">Выручка</span><span class="cb-val" id="cashRev">0</span></div>
+        <div class="cb-item"><span class="cb-dot" style="background:#e07b3a"></span><span class="cb-name" data-ru="Закупка базара">Закупка базара</span><span class="cb-val" id="cashExp">0</span></div>
+        <div class="cb-item"><span class="cb-dot" style="background:#d98b3a"></span><span class="cb-name" data-ru="Прочие расходы">Прочие расходы</span><span class="cb-val" id="cashOther">0</span></div>
       </div>
     </div>
     <div class="mon-seg" id="cashSeg">
-      <button data-cp="1" class="active">Месяц</button>
-      <button data-cp="3">3 мес</button>
-      <button data-cp="12">Год</button>
-      <button data-cp="0">Всё</button>
+      <button data-cp="1" class="active" data-ru="Месяц">Месяц</button>
+      <button data-cp="3" data-ru="3 мес">3 мес</button>
+      <button data-cp="12" data-ru="Год">Год</button>
+      <button data-cp="0" data-ru="Всё">Всё</button>
     </div>
 
     <div class="plan-tabs" id="cashMode">
-      <button data-cm="rev" class="active">💵 Выручка</button>
-      <button data-cm="exp">🧾 Расходы</button>
-      <button data-cm="day">📅 По дням</button>
+      <button data-cm="rev" class="active" data-ru="💵 Выручка">💵 Выручка</button>
+      <button data-cm="exp" data-ru="🧾 Расходы">🧾 Расходы</button>
+      <button data-cm="day" data-ru="📅 По дням">📅 По дням</button>
     </div>
 
     <div id="cashRevMode">
@@ -625,9 +650,9 @@
         <div class="field-label">Записать выручку за день</div>
         <div class="row2">
           <div style="flex:1.3"><input type="date" id="revDate"></div>
-          <div style="flex:1.7"><input type="number" id="revAmount" placeholder="Сумма продаж" inputmode="decimal"></div>
+          <div style="flex:1.7"><input type="number" id="revAmount" placeholder="Сумма продаж" data-ru="Сумма продаж" inputmode="decimal"></div>
         </div>
-        <button class="add" id="revAddBtn">Записать выручку</button>
+        <button class="add" id="revAddBtn" data-ru="Записать выручку">Записать выручку</button>
       </div>
       <div class="list" id="revList"></div>
     </div>
@@ -635,12 +660,12 @@
     <div id="cashExpMode" style="display:none">
       <div class="add-form">
         <div class="field-label">Свой расход (аренда, зарплата, свет...)</div>
-        <input type="text" id="expNote" placeholder="На что потратил" style="margin-bottom:10px">
+        <input type="text" id="expNote" placeholder="На что потратил" data-ru="На что потратил" style="margin-bottom:10px">
         <div class="row2">
           <div style="flex:1.3"><input type="date" id="expDate"></div>
-          <div style="flex:1.7"><input type="number" id="expAmount" placeholder="Сумма" inputmode="decimal"></div>
+          <div style="flex:1.7"><input type="number" id="expAmount" placeholder="Сумма" data-ru="Сумма" inputmode="decimal"></div>
         </div>
-        <button class="add" id="expAddBtn">Добавить расход</button>
+        <button class="add" id="expAddBtn" data-ru="Добавить расход">Добавить расход</button>
       </div>
       <div class="list" id="expList"></div>
     </div>
@@ -655,7 +680,7 @@
       <h3 id="modalTitle">Удалить?</h3>
       <p id="modalText"></p>
       <div class="modal-btns">
-        <button class="mb-cancel" id="modalCancel">Отмена</button>
+        <button class="mb-cancel" id="modalCancel" data-ru="Отмена">Отмена</button>
         <button class="mb-ok" id="modalOk">Удалить</button>
       </div>
     </div>
@@ -666,26 +691,55 @@
       <h3 id="payTitle">💵 Оплата долга</h3>
       <p id="payText" style="margin-bottom:12px"></p>
       <div class="field-label">Сколько оплачено</div>
-      <input type="number" id="payAmount" inputmode="decimal" placeholder="Сумма" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
-      <button class="add" id="payFullBtn" style="margin-top:0;background:var(--bg2);color:var(--ink);box-shadow:none">Оплатить весь остаток</button>
+      <input type="number" id="payAmount" inputmode="decimal" placeholder="Сумма" data-ru="Сумма" style="width:100%;background:var(--bg);border:1.5px solid transparent;border-radius:12px;font-size:16px;padding:13px 15px;outline:none;font-family:inherit;margin-bottom:10px">
+      <button class="add" id="payFullBtn" style="margin-top:0;background:var(--bg2);color:var(--ink);box-shadow:none" data-ru="Оплатить весь остаток">Оплатить весь остаток</button>
       <div id="payCashWrap" style="margin-top:14px">
         <label class="pay-check"><input type="checkbox" id="payToCash" checked> <span id="payCashLabel">Записать в Кассу как расход</span></label>
       </div>
       <div class="modal-btns" style="margin-top:16px">
-        <button class="mb-cancel" id="payCancel">Отмена</button>
-        <button class="mb-ok" id="payOk" style="background:var(--accent)">Оплатить</button>
+        <button class="mb-cancel" id="payCancel" data-ru="Отмена">Отмена</button>
+        <button class="mb-ok" id="payOk" style="background:var(--accent)" data-ru="Оплатить">Оплатить</button>
       </div>
+    </div>
+  </div>
+
+  <div class="phone-screen" id="phoneScreen">
+    <div class="phone-head">
+      <button class="ph-back" id="phoneClose">‹ Назад</button>
+      <div class="ph-title">📞 Телефон (таксофон)</div>
+    </div>
+    <div class="phone-body">
+      <div class="cash-card" style="background:linear-gradient(160deg,#24405e,#1c3049)">
+        <div class="cash-l">Прибыль с телефона за период</div>
+        <div class="cash-v" id="phoneTotal">0 <span>сум</span></div>
+      </div>
+      <div class="mon-seg" id="phoneSeg">
+        <button data-pp="1" class="active" data-ru="Месяц">Месяц</button>
+        <button data-pp="3" data-ru="3 мес">3 мес</button>
+        <button data-pp="12" data-ru="Год">Год</button>
+        <button data-pp="0" data-ru="Всё">Всё</button>
+      </div>
+      <div class="add-form">
+        <div class="field-label">Записать прибыль за день</div>
+        <input type="text" id="phoneNote" placeholder="Заметка (необязательно)" style="margin-bottom:10px">
+        <div class="row2">
+          <div style="flex:1.3"><input type="date" id="phoneDate"></div>
+          <div style="flex:1.7"><input type="number" id="phoneAmount" placeholder="Прибыль" inputmode="decimal"></div>
+        </div>
+        <button class="add" id="phoneAddBtn">Записать прибыль</button>
+      </div>
+      <div class="list" id="phoneList"></div>
     </div>
   </div>
 
   <div class="modal-bg" id="accModalBg">
     <div class="modal">
-      <h3>👤 Мой аккаунт</h3>
-      <div class="field-label">Вы вошли как</div>
+      <h3 data-ru="👤 Мой аккаунт">👤 Мой аккаунт</h3>
+      <div class="field-label" data-ru="Вы вошли как">Вы вошли как</div>
       <div id="accCurrent" style="font-weight:800;font-size:16px;margin:4px 0 16px;padding:12px 15px;background:var(--bg);border-radius:11px"></div>
       <p style="margin-bottom:14px">Войди под этим же логином и паролем на другом телефоне — увидишь свои данные везде.</p>
-      <button class="mb-cancel" id="accLogoutBtn" style="width:100%;margin-top:0;color:var(--red)">🚪 Выйти из аккаунта</button>
-      <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px">Закрыть</button>
+      <button class="mb-cancel" id="accLogoutBtn" style="width:100%;margin-top:0;color:var(--red)" data-ru="🚪 Выйти из аккаунта">🚪 Выйти из аккаунта</button>
+      <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px" data-ru="Закрыть">Закрыть</button>
     </div>
   </div>
 
@@ -706,6 +760,60 @@
   </div>
 
 <script>
+  // ===== Языки (RU / UZ кириллица) =====
+  // словарь: русский текст → узбекский (кириллица)
+  const I18N={
+    'Базар':'Бозор','Планы':'Режалар','Каталог':'Каталог','Касса':'Касса','Долги':'Қарзлар','История':'Тарих','Монитор':'Монитор',
+    'Итого за базар':'Бозор учун жами','Сохранить базар в историю':'Бозорни тарихга сақлаш','💾 Сохранить базар в историю':'💾 Бозорни тарихга сақлаш',
+    'Поиск товара на базаре...':'Бозорда маҳсулот қидириш...','Поиск по каталогу...':'Каталогдан қидириш...',
+    'Скопировать':'Нусха олиш','📋 Скопировать':'📋 Нусха олиш','Сбросить':'Тозалаш','↺ Сбросить':'↺ Тозалаш',
+    'Введи количество товаров ниже':'Қуйида маҳсулот сонини киритинг',
+    'Сортировка:':'Саралаш:','Как добавил':'Қўшилган тартибда','По имени':'Номи бўйича','По цене':'Нархи бўйича',
+    'План на следующий базар':'Кейинги бозор режаси','Перенести в Базар':'Бозорга ўтказиш','🧺 Перенести в Базар':'🧺 Бозорга ўтказиш',
+    'Из каталога':'Каталогдан','Заметка':'Эслатма','Найди товар...':'Маҳсулот қидиринг...','Добавить':'Қўшиш','Сколько':'Қанча',
+    'Добавить заметку':'Эслатма қўшиш','Напр.: спросить цену на сахар':'Мас.: шакар нархини сўраш','Очистить план':'Режани тозалаш','🗑 Очистить план':'🗑 Режани тозалаш',
+    'Добавить товар':'Маҳсулот қўшиш','Название':'Номи','Цена':'Нархи','Ед.':'Бирлик','Раздел':'Бўлим','Сохранить':'Сақлаш','Отмена':'Бекор қилиш','Удалить':'Ўчириш','Ок':'Ок','Закрыть':'Ёпиш',
+    'Прибыль за период':'Давр учун фойда','Выручка':'Тушум','Закупка базара':'Бозор харажати','Закупка':'Харид','Прочие расходы':'Бошқа харажатлар',
+    'Месяц':'Ой','3 мес':'3 ой','Год':'Йил','Всё':'Ҳаммаси',
+    '💵 Выручка':'💵 Тушум','🧾 Расходы':'🧾 Харажатлар','📅 По дням':'📅 Кунлар бўйича',
+    'Записать выручку за день':'Кунлик тушумни ёзиш','Сумма продаж':'Сотув суммаси','Записать выручку':'Тушумни ёзиш','Сумма':'Сумма',
+    'Свой расход (аренда, зарплата, свет...)':'Ўз харажати (ижара, ойлик, свет...)','На что потратил':'Нимага сарфладингиз','Добавить расход':'Харажат қўшиш',
+    'Я должен':'Мен қарздорман','Мне должны':'Менга қарздор','Мне должен':'Менга қарздор',
+    'Кому / кто (имя поставщика, покупателя)':'Кимга / ким (етказувчи, харидор номи)','За что (необязательно)':'Нима учун (ихтиёрий)','Добавить долг':'Қарз қўшиш',
+    '💵 Сумма':'💵 Сумма','📦 Из каталога':'📦 Каталогдан','＋ В долг':'＋ Қарзга','Записать долг на сумму':'Қарзни суммага ёзиш','Итого':'Жами',
+    '✓ Закрытые':'✓ Ёпилган','закрыт':'ёпилди',
+    '💵 Оплата долга':'💵 Қарз тўлови','💵 Оплата моего долга':'💵 Қарзимни тўлаш','💵 Возврат долга мне':'💵 Қарз қайтарилди',
+    'Сколько оплачено':'Қанча тўланди','Оплатить весь остаток':'Қолганини тўлиқ тўлаш','Оплатить':'Тўлаш',
+    'Записать в Кассу как расход':'Кассага харажат сифатида ёзиш','Записать в Кассу как выручку':'Кассага тушум сифатида ёзиш',
+    '📊 Доход и расход по месяцам':'📊 Ойлик даромад ва харажат','🫧 Расходы по разделам':'🫧 Бўлимлар бўйича харажат','Прибыль:':'Фойда:',
+    'Сохранить копию':'Нусха сақлаш','⬇️ Сохранить копию':'⬇️ Нусха сақлаш','Загрузить копию':'Нусхани юклаш','⬆️ Загрузить копию':'⬆️ Нусхани юклаш',
+    'Разделы':'Бўлимлар','⚙️ Разделы':'⚙️ Бўлимлар','Добавить раздел':'Бўлим қўшиш',
+    '👤 Мой аккаунт':'👤 Менинг аккаунтим','Вы вошли как':'Сиз кирдингиз','🚪 Выйти из аккаунта':'🚪 Аккаунтдан чиқиш',
+    'Войти через Telegram':'Telegram орқали кириш','✈️ Войти через Telegram':'✈️ Telegram орқали кириш',
+    'или':'ёки','Вход':'Кириш','Регистрация':'Рўйхатдан ўтиш','Имя (логин)':'Исм (логин)','Пароль':'Парол','Повтори пароль':'Паролни такрорланг',
+    'Войти':'Кириш','Создать аккаунт':'Аккаунт яратиш','Учёт магазина: закупки, касса, прибыль, долги':'Дўкон ҳисоби: харид, касса, фойда, қарз',
+    'Данные хранятся в облаке и привязаны к аккаунту':'Маълумотлар булутда сақланади ва аккаунтга боғланган',
+    'Продукты':'Маҳсулотлар','Сигареты':'Сигареталар','Напитки':'Ичимликлар',
+    'сум':'сўм','шт':'дона','Поиск':'Қидириш',
+    '📞 Телефон (таксофон)':'📞 Телефон (таксофон)','‹ Назад':'‹ Орқага','Прибыль с телефона за период':'Давр учун телефон фойдаси',
+    'Записать прибыль за день':'Кунлик фойдани ёзиш','Заметка (необязательно)':'Эслатма (ихтиёрий)','Прибыль':'Фойда','Записать прибыль':'Фойдани ёзиш',
+    'Скопировать':'Нусха олиш'
+  };
+  function getLang(){ return localStorage.getItem('bazar_lang')||'ru'; }
+  function setLang(l){ localStorage.setItem('bazar_lang',l); applyLang(); }
+  function tr(ru){ if(getLang()==='ru')return ru; return I18N[ru]||ru; }
+  // перевод статичного текста на странице
+  function applyLang(){
+    const uz=getLang()==='uz';
+    // обходим текстовые узлы кнопок, заголовков, плейсхолдеров с пометкой
+    document.querySelectorAll('[data-ru]').forEach(el=>{
+      const ru=el.getAttribute('data-ru');
+      if(el.placeholder!==undefined&&el.tagName==='INPUT'){ el.placeholder=uz?(I18N[ru]||ru):ru; }
+      else { el.textContent=uz?(I18N[ru]||ru):ru; }
+    });
+    const lb=document.getElementById('langBtn'); if(lb)lb.textContent=uz?'🇺🇿':'🇷🇺';
+  }
+
   // ===== Облако (Supabase) =====
   const SUPA_URL='https://aozmnrvdskcgkkpvcirk.supabase.co';
   const SUPA_KEY='sb_publishable_HukLaSRWjBH3CjhrQTGf2A_raw_xybO';
@@ -779,7 +887,7 @@
     else b.textContent='☁️';
   }
   function collectData(){
-    return { catalog, hist, sections, plan, revenue, expenses, debts, v:7 };
+    return { catalog, hist, sections, plan, revenue, expenses, debts, phone, v:7 };
   }
   function applyData(d){
     if(!d)return;
@@ -790,6 +898,7 @@
     if(Array.isArray(d.revenue))revenue=d.revenue;
     if(Array.isArray(d.expenses))expenses=d.expenses;
     if(Array.isArray(d.debts))debts=d.debts;
+    if(Array.isArray(d.phone))phone=d.phone;
     const fb=sections[0]?sections[0].name:'Продукты';
     catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
   }
@@ -871,6 +980,7 @@
       localStorage.setItem(SKEY,JSON.stringify(sections)); localStorage.setItem(RKEY,JSON.stringify(revenue));
       localStorage.setItem(EKEY,JSON.stringify(expenses));
       localStorage.setItem(DKEY,JSON.stringify(debts));
+      localStorage.setItem(FKEY,JSON.stringify(phone));
     }catch(e){}
   }
   // отложенное сохранение (вызывается после любого изменения)
@@ -880,7 +990,7 @@
     setSync('saving');
     cloudSaveTimer=setTimeout(cloudPush,800);  }
 
-  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1', DKEY='bazar_debts_v1';
+  const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1', DKEY='bazar_debts_v1', FKEY='bazar_phone_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
   // разделы по умолчанию
   const DEFAULT_SECTIONS=[{name:'Продукты',icon:'🛒',color:'#3f8f5b'},{name:'Сигареты',icon:'🚬',color:'#8a6d3b'},{name:'Напитки',icon:'🥤',color:'#2f6fb0'}];
@@ -892,7 +1002,7 @@
   function CATS_LIST(){ return sections.map(s=>s.name); }
   function META(cat){ const s=sections.find(x=>x.name===cat); return s?{icon:s.icon,color:s.color}:{icon:'📦',color:'#888'}; }
 
-  let catalog=[], qty={}, hist=[], plan=[], revenue=[], expenses=[], debts=[], editId=null, pendingAction=null;
+  let catalog=[], qty={}, hist=[], plan=[], revenue=[], expenses=[], debts=[], phone=[], editId=null, pendingAction=null;
 
   try { catalog=JSON.parse(localStorage.getItem(KEY))||[]; } catch(e){}
   try { qty=JSON.parse(localStorage.getItem(QKEY))||{}; } catch(e){}
@@ -901,6 +1011,7 @@
   try { revenue=JSON.parse(localStorage.getItem(RKEY))||[]; } catch(e){}
   try { expenses=JSON.parse(localStorage.getItem(EKEY))||[]; } catch(e){}
   try { debts=JSON.parse(localStorage.getItem(DKEY))||[]; } catch(e){}
+  try { phone=JSON.parse(localStorage.getItem(FKEY))||[]; } catch(e){}
   // миграция: товары без раздела или с разделом, которого нет — кидаем в первый
   const firstSec=()=>sections[0]?sections[0].name:'Продукты';
   catalog.forEach(it=>{
@@ -982,6 +1093,7 @@
   }
 
   let buySearchQuery='';
+  let buyCollapsed={};
   function renderBuy(){
     const wrap=$('buyGroups');
     if(catalog.length===0){ wrap.innerHTML='<div class="empty">Каталог пуст 🤷<br>Открой «Каталог» и добавь товары с ценами.</div>'; renderTotal(); return; }
@@ -993,7 +1105,14 @@
       if(!items.length)return;
       found+=items.length;
       const m=META(cat);
-      html+=`<div class="cat-group-label"><span class="dot" style="background:${m.color}"></span>${m.icon} ${cat}</div><div class="list">`;
+      // сумма раздела в текущем базаре
+      const catSum=items.reduce((s,it)=>s+it.price*(qty[it.id]||0),0);
+      const collapsed=!q&&buyCollapsed[cat]; // при поиске не сворачиваем
+      html+=`<div class="cat-group-label cat-collapse" data-collapse="${esc(cat)}">
+        <span class="dot" style="background:${m.color}"></span>${m.icon} ${cat}
+        ${catSum>0?`<span class="cat-sum">${fmt(catSum)}</span>`:''}
+        <span class="cat-arrow ${collapsed?'closed':''}">▾</span></div>`;
+      html+=`<div class="list" ${collapsed?'style="display:none"':''}>`;
       html+=items.map(it=>{
         const q2=qty[it.id]||0, sum=it.price*q2;
         return `<div class="buy-item ${q2>0?'has':''}" data-card="${it.id}">
@@ -1230,6 +1349,13 @@
 
   // Быстрое изменение цены на базаре
   $('buyGroups').addEventListener('click',e=>{
+    const col=e.target.closest('[data-collapse]');
+    if(col){
+      const cat=col.dataset.collapse;
+      buyCollapsed[cat]=!buyCollapsed[cat];
+      renderBuy();
+      return;
+    }
     const pe=e.target.closest('[data-priceedit]');
     if(pe){
       const id=pe.dataset.priceedit; const it=catalog.find(c=>c.id===id); if(!it)return;
@@ -1259,9 +1385,11 @@
     else if(s)s.remove();
   });
 
-  $('resetBtn').addEventListener('click',()=>{
+  function doReset(){
     if(Object.keys(qty).length) modal('Сбросить количества?','Все введённые количества обнулятся. Каталог и история останутся.','Сбросить',()=>{ qty={}; saveQty(); renderBuy(); });
-  });
+  }
+  $('resetBtn').addEventListener('click',doReset);
+  $('resetBtnTop').addEventListener('click',doReset);
 
   $('saveBazarBtn').addEventListener('click',()=>{
     const t=total(), count=catalog.filter(it=>(qty[it.id]||0)>0).length;
@@ -1288,7 +1416,7 @@
 
   // ===== Резервная копия =====
   $('bkSaveBtn').addEventListener('click',()=>{
-    const data={ v:8, catalog, hist, sections, plan, revenue, expenses, debts, savedAt:new Date().toISOString() };
+    const data={ v:9, catalog, hist, sections, plan, revenue, expenses, debts, phone, savedAt:new Date().toISOString() };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -1314,6 +1442,7 @@
           revenue=Array.isArray(d.revenue)?d.revenue:[]; saveRevenue();
           expenses=Array.isArray(d.expenses)?d.expenses:[]; saveExpenses();
           debts=Array.isArray(d.debts)?d.debts:[]; saveDebts();
+          phone=Array.isArray(d.phone)?d.phone:[]; savePhone();
           const fb=sections[0]?sections[0].name:'Продукты';
           catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
           qty={}; saveCat(); saveHist(); saveQty();
@@ -1326,7 +1455,7 @@
   });
 
   // ===== Монитор =====
-  let monPeriod=3; // месяцев; 0 = всё время
+  let monPeriod=1; // месяцев; 0 = всё время
   function renderMon(){
     const MON=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
     // фильтр истории по периоду
@@ -1350,7 +1479,7 @@
     }
     const grandTotal=items.reduce((s,h)=>s+h.total,0);
     $('monTotal').innerHTML=`${fmt(grandTotal)} <span>сум</span>`;
-    const labelTxt = monPeriod===0?'за всё время':monPeriod===12?'за год':`за ${monPeriod} мес`;
+    const labelTxt = monPeriod===0?'за всё время':monPeriod===12?'за год':monPeriod===1?'за месяц':`за ${monPeriod} мес`;
     $('monSub').textContent=`${items.length} ${pluralBaz(items.length)} ${labelTxt}`;
 
     // выручка по месяцам (для дохода)
@@ -1568,6 +1697,7 @@
   function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} cloudSync(); }
   function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} cloudSync(); }
   function saveDebts(){ try{localStorage.setItem(DKEY,JSON.stringify(debts));}catch(e){} cloudSync(); }
+  function savePhone(){ try{localStorage.setItem(FKEY,JSON.stringify(phone));}catch(e){} cloudSync(); }
   function periodCutoff(months){ if(months<=0)return null; const c=new Date(); c.setMonth(c.getMonth()-months+1); c.setDate(1); c.setHours(0,0,0,0); return c; }
   function renderCash(){
     const cut=periodCutoff(cashPeriod);
@@ -1621,9 +1751,9 @@
       const d=new Date(k+'T12:00:00'); const v=days[k];
       const profit=v.rev-v.buy-v.other;
       let lines='';
-      if(v.rev>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#3ecf8e"></span><span class="dl-name">Выручка</span><span class="dl-val">+ ${fmt(v.rev)}</span></div>`;
+      if(v.rev>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#3ecf8e"></span><span class="dl-name" data-ru="Выручка">Выручка</span><span class="dl-val">+ ${fmt(v.rev)}</span></div>`;
       if(v.buy>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#c8541e"></span><span class="dl-name">Закупка</span><span class="dl-val">− ${fmt(v.buy)}</span></div>`;
-      if(v.other>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#d98b3a"></span><span class="dl-name">Прочие расходы</span><span class="dl-val">− ${fmt(v.other)}</span></div>`;
+      if(v.other>0)lines+=`<div class="day-line"><span class="dl-dot" style="background:#d98b3a"></span><span class="dl-name" data-ru="Прочие расходы">Прочие расходы</span><span class="dl-val">− ${fmt(v.other)}</span></div>`;
       return `<div class="day-card"><div class="day-head">
         <span class="day-date">${d.getDate()} ${MON[d.getMonth()]}</span>
         <span class="day-dow">${d.toLocaleDateString('ru-RU',{weekday:'long'})}</span>
@@ -1885,7 +2015,7 @@
   $('tabHist').addEventListener('click',()=>switchTab('Hist'));
   $('tabMon').addEventListener('click',()=>switchTab('Mon'));
 
-  $('copyBtn').addEventListener('click',()=>{
+  function doCopy(btnId){
     let out=[];
     CATS_LIST().forEach(cat=>{
       const lines=catalog.filter(it=>it.cat===cat&&(qty[it.id]||0)>0).map(it=>`${it.name} — ${fmt(it.price)}×${qty[it.id]} = ${fmt(it.price*qty[it.id])}`);
@@ -1893,8 +2023,10 @@
     });
     if(!out.length)return;
     const txt=out.join('\n')+`ИТОГО: ${fmt(total())} сум`;
-    navigator.clipboard.writeText(txt).then(()=>{ $('copyBtn').textContent='✅ Готово'; setTimeout(()=>$('copyBtn').textContent='📋 Скопировать',1500); });
-  });
+    navigator.clipboard.writeText(txt).then(()=>{ const b=$(btnId); const old=b.textContent; b.textContent='✅ Готово'; setTimeout(()=>b.textContent=old,1500); });
+  }
+  $('copyBtn').addEventListener('click',()=>doCopy('copyBtn'));
+  $('copyBtnTop').addEventListener('click',()=>doCopy('copyBtnTop'));
 
   // ===== Разделы (секции) =====
   let pickedColor=PALETTE[0];
@@ -1964,6 +2096,59 @@
     $('accCurrent').textContent=accLabel();
     $('accModalBg').classList.add('show');
   }
+  $('langBtn').addEventListener('click',()=>{ setLang(getLang()==='ru'?'uz':'ru'); });
+
+  // ===== Телефон (таксофон) =====
+  let phonePeriod=1;
+  function renderPhone(){
+    const cut=(phonePeriod<=0)?null:(()=>{ const c=new Date(); c.setMonth(c.getMonth()-phonePeriod+1); c.setDate(1); c.setHours(0,0,0,0); return c; })();
+    const inP=d=>!cut||new Date(d)>=cut;
+    const total=phone.filter(p=>inP(p.date)).reduce((s,p)=>s+p.amount,0);
+    $('phoneTotal').innerHTML=`${fmt(total)} <span>сум</span>`;
+    const list=$('phoneList');
+    const sorted=phone.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(!sorted.length){ list.innerHTML='<div class="empty">Пока нет записей.<br>Пиши дневную прибыль с телефона ↑</div>'; return; }
+    const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+    list.innerHTML=sorted.map(p=>{
+      const d=new Date(p.date);
+      return `<div class="rev-item">
+        <div class="rev-date"><div class="rev-d">${d.getDate()}</div><div class="rev-m">${MON[d.getMonth()]}</div></div>
+        <div class="rev-info"><div class="rev-amt">+ ${fmt(p.amount)} сум</div>
+        <div class="rev-lbl">${p.note?esc(p.note):'прибыль с телефона'}</div></div>
+        <button class="rev-del" data-fdel="${p.id}">×</button></div>`;
+    }).join('');
+  }
+  function openPhone(){
+    const t=new Date();
+    $('phoneDate').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    renderPhone();
+    $('phoneScreen').classList.add('show');
+  }
+  $('phoneBtn').addEventListener('click',openPhone);
+  $('phoneClose').addEventListener('click',()=>$('phoneScreen').classList.remove('show'));
+  $('phoneSeg').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-pp]'); if(!b)return;
+    phonePeriod=+b.dataset.pp;
+    [...$('phoneSeg').children].forEach(x=>x.classList.toggle('active',x===b));
+    renderPhone();
+  });
+  $('phoneAddBtn').addEventListener('click',()=>{
+    const amt=parseFloat($('phoneAmount').value);
+    const note=$('phoneNote').value.trim();
+    let dateStr=$('phoneDate').value;
+    if(isNaN(amt)||amt<=0){ $('phoneAmount').focus(); return; }
+    if(!dateStr){ const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+    const iso=new Date(dateStr+'T12:00:00').toISOString();
+    const same=phone.find(p=>p.date.slice(0,10)===dateStr);
+    if(same)same.amount+=amt; else phone.push({id:Date.now()+'',date:iso,amount:amt,note});
+    savePhone();
+    $('phoneAmount').value=''; $('phoneNote').value='';
+    renderPhone();
+  });
+  $('phoneList').addEventListener('click',e=>{
+    const d=e.target.closest('[data-fdel]'); if(!d)return;
+    modal('Удалить запись?','Запись прибыли будет удалена.','Удалить',()=>{ phone=phone.filter(p=>p.id!==d.dataset.fdel); savePhone(); renderPhone(); });
+  });
   $('accBtn').addEventListener('click',openAcc);
   $('accClose').addEventListener('click',()=>$('accModalBg').classList.remove('show'));
   $('accModalBg').addEventListener('click',e=>{ if(e.target===$('accModalBg'))$('accModalBg').classList.remove('show'); });
@@ -2008,6 +2193,7 @@
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist();
+  applyLang();
 
   // проверка сессии при старте
   (async function(){
