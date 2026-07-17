@@ -60,6 +60,14 @@
   .auth-screen.hidden { display:none; }
   .phone-screen { position:fixed; inset:0; z-index:90; background:var(--bg); overflow-y:auto; padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom)); display:none; max-width:560px; margin:0 auto; }
   .phone-screen.show { display:block; }
+  .acc-hero { text-align:center; padding:24px 0 8px; }
+  .acc-avatar { width:88px; height:88px; margin:0 auto 14px; border-radius:50%; background:linear-gradient(145deg,#c8541e,#e07b3a); display:flex; align-items:center; justify-content:center; font-size:44px; box-shadow:0 10px 24px rgba(200,84,30,.3); }
+  .acc-name { font-size:24px; font-weight:800; letter-spacing:-0.5px; word-break:break-word; }
+  .acc-role { font-size:14px; color:var(--muted); font-weight:600; margin-top:4px; }
+  .acc-info-card { background:var(--card); border-radius:16px; padding:16px 18px; margin:22px 0 18px; box-shadow:var(--shadow); }
+  .acc-info-card p { font-size:14px; color:var(--muted); line-height:1.6; font-weight:500; }
+  .acc-logout { width:100%; background:var(--soft); color:var(--red); border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .acc-logout:active { transform:scale(.98); }
   .phone-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
   .ph-back { background:var(--card); border:none; box-shadow:var(--shadow); border-radius:11px; padding:9px 14px; font-size:15px; font-weight:700; color:var(--accent); cursor:pointer; font-family:inherit; }
   .ph-title { font-size:18px; font-weight:800; }
@@ -172,12 +180,14 @@
 
   .buy-item { background:var(--card); border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); border:1.5px solid transparent; transition:.18s; }
   .buy-item.has { border-color:var(--accent); background:#fffdf9; }
+  html[data-theme="dark"] .buy-item.has { background:#2e2820; }
   .buy-info { flex:1; min-width:0; }
   .buy-name { font-size:16px; font-weight:700; }
   .buy-price { font-size:13px; color:var(--muted); margin-top:3px; font-weight:600; display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
   .buy-price .pen { opacity:.5; font-size:11px; }
   .price-edit { display:flex; align-items:center; gap:6px; margin-top:4px; }
   .price-edit input { width:90px; background:#fff; border:1.5px solid var(--accent); border-radius:9px; padding:6px 9px; font-size:14px; font-weight:700; font-family:inherit; outline:none; color:var(--ink); }
+  html[data-theme="dark"] .price-edit input { background:#302a22; }
   .price-edit button { border:none; background:var(--accent); color:#fff; border-radius:9px; padding:6px 11px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
   .buy-sum { font-size:14px; color:var(--accent); font-weight:800; margin-top:4px; }
   .stepper { display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -750,14 +760,21 @@
     </div>
   </div>
 
-  <div class="modal-bg" id="accModalBg">
-    <div class="modal">
-      <h3 data-ru="👤 Мой аккаунт">👤 Мой аккаунт</h3>
-      <div class="field-label" data-ru="Вы вошли как">Вы вошли как</div>
-      <div id="accCurrent" style="font-weight:800;font-size:16px;margin:4px 0 16px;padding:12px 15px;background:var(--bg);border-radius:11px"></div>
-      <p style="margin-bottom:14px">Войди под этим же логином и паролем на другом телефоне — увидишь свои данные везде.</p>
-      <button class="mb-cancel" id="accLogoutBtn" style="width:100%;margin-top:0;color:var(--red)" data-ru="🚪 Выйти из аккаунта">🚪 Выйти из аккаунта</button>
-      <button class="mb-cancel" id="accClose" style="width:100%;margin-top:8px" data-ru="Закрыть">Закрыть</button>
+  <div class="phone-screen" id="accScreen">
+    <div class="phone-head">
+      <button class="ph-back" id="accClose" data-ru="‹ Назад">‹ Назад</button>
+      <div class="ph-title" data-ru="👤 Мой аккаунт">👤 Мой аккаунт</div>
+    </div>
+    <div class="phone-body">
+      <div class="acc-hero">
+        <div class="acc-avatar" id="accAvatar">👤</div>
+        <div class="acc-name" id="accCurrent"></div>
+        <div class="acc-role" id="accRole"></div>
+      </div>
+      <div class="acc-info-card">
+        <p data-ru="Войди под этим же логином и паролем на другом телефоне — увидишь свои данные везде.">Войди под этим же логином и паролем на другом телефоне — увидишь свои данные везде.</p>
+      </div>
+      <button class="acc-logout" id="accLogoutBtn" data-ru="🚪 Выйти из аккаунта">🚪 Выйти из аккаунта</button>
     </div>
   </div>
 
@@ -2105,14 +2122,14 @@
   });
 
   // ===== Аккаунт =====
-  function accLabel(){
-    if(cloudUserId.startsWith('usr_'))return '👤 '+cloudUserId.slice(4);
-    if(cloudUserId.startsWith('tg_'))return '✈️ Telegram-аккаунт';
-    return cloudUserId;
-  }
   function openAcc(){
-    $('accCurrent').textContent=accLabel();
-    $('accModalBg').classList.add('show');
+    let name, role;
+    if(cloudUserId.startsWith('usr_')){ name=cloudUserId.slice(4); role='Логин + пароль'; $('accAvatar').textContent='👤'; }
+    else if(cloudUserId.startsWith('tg_')){ name='Telegram'; role='Вход через Telegram'; $('accAvatar').textContent='✈️'; }
+    else { name=cloudUserId; role='Устройство'; $('accAvatar').textContent='📱'; }
+    $('accCurrent').textContent=name;
+    $('accRole').textContent=getLang()==='uz'?(role==='Логин + пароль'?'Логин + парол':role==='Вход через Telegram'?'Telegram орқали':'Қурилма'):role;
+    $('accScreen').classList.add('show');
   }
   $('langBtn').addEventListener('click',()=>{ setLang(getLang()==='ru'?'uz':'ru'); });
 
@@ -2184,8 +2201,7 @@
     modal('Удалить запись?','Запись прибыли будет удалена.','Удалить',()=>{ phone=phone.filter(p=>p.id!==d.dataset.fdel); savePhone(); renderPhone(); });
   });
   $('accBtn').addEventListener('click',openAcc);
-  $('accClose').addEventListener('click',()=>$('accModalBg').classList.remove('show'));
-  $('accModalBg').addEventListener('click',e=>{ if(e.target===$('accModalBg'))$('accModalBg').classList.remove('show'); });
+  $('accClose').addEventListener('click',()=>$('accScreen').classList.remove('show'));
   $('accLogoutBtn').addEventListener('click',()=>{
     modal('Выйти из аккаунта?','Данные останутся в облаке. Войдёшь снова — увидишь их.','Выйти',()=>{ logout(); });
   });
