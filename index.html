@@ -442,6 +442,132 @@
   .sec-col.sel { border-color:var(--ink); transform:scale(1.1); }
   .sec-add-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:12px; padding:13px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; }
   .sec-add-btn:active { transform:scale(.98); }
+  /* ============================================================
+     DESIGN SYSTEM 2.0 — premium layer
+     Токены → типографика → глубина → движение → адаптив
+     ============================================================ */
+
+  /* --- Токены: выверенная палитра и шкалы --- */
+  :root {
+    --bg:#f7f5f0; --bg2:#edeae2; --card:#ffffff; --line:#e8e4da;
+    --ink:#1d1a16; --muted:#8a8275; --accent:#d95d21; --accent-d:#b6480f;
+    --green:#2f9e5f; --red:#d4442e; --soft:#faeee3; --blue:#2f6fb0;
+    /* глубина: 3 слоя теней */
+    --shadow-1:0 1px 2px rgba(29,26,22,.04), 0 2px 8px rgba(29,26,22,.04);
+    --shadow-2:0 2px 4px rgba(29,26,22,.05), 0 12px 32px rgba(29,26,22,.08);
+    --shadow-3:0 8px 16px rgba(29,26,22,.08), 0 32px 72px rgba(29,26,22,.16);
+    --shadow:var(--shadow-1);
+    /* радиусы: строгая шкала */
+    --r-s:10px; --r-m:14px; --r-l:20px; --r-xl:26px;
+    /* движение */
+    --ease:cubic-bezier(.22,.9,.3,1);
+  }
+  html[data-theme="dark"] {
+    --bg:#171411; --bg2:#211d18; --card:#242019; --line:#332e26;
+    --ink:#f2ede4; --muted:#958d7e; --accent:#ec7b3c; --accent-d:#d95d21;
+    --green:#46b878; --red:#e8604c; --soft:#39291d; --blue:#4a86c4;
+    --shadow-1:0 1px 2px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.2);
+    --shadow-2:0 2px 4px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.35);
+    --shadow-3:0 8px 16px rgba(0,0,0,.4), 0 32px 72px rgba(0,0,0,.5);
+  }
+
+  /* --- Типографика: иерархия и оптическая точность --- */
+  body { font-family:-apple-system,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; letter-spacing:-0.011em; }
+  h1 { font-size:21px; font-weight:800; letter-spacing:-0.03em; }
+  .total-label, .cash-l, .plan-l, .ds-l { font-size:11px; letter-spacing:.14em; font-weight:700; opacity:.75; }
+  .total-value { font-size:44px; letter-spacing:-0.035em; font-weight:800; }
+  .total-value small { font-size:19px; font-weight:600; letter-spacing:-0.01em; }
+  .cash-v { letter-spacing:-0.03em; }
+  .cat-group-label { font-size:11.5px; letter-spacing:.12em; }
+  .buy-name, .plan-name, .debt-who, .exp-note { font-size:15.5px; font-weight:700; letter-spacing:-0.015em; }
+  .buy-price { font-size:12.5px; }
+
+  /* --- Слои и поверхности --- */
+  .total-card { border-radius:var(--r-xl); box-shadow:var(--shadow-3); background:linear-gradient(155deg,#33291f 0%,#241d15 55%,#2a2117 100%); position:relative; overflow:hidden; }
+  .total-card::after { content:""; position:absolute; top:-40%; right:-20%; width:70%; height:120%; background:radial-gradient(closest-side, rgba(224,123,58,.22), transparent 70%); pointer-events:none; }
+  html[data-theme="dark"] .total-card { background:linear-gradient(155deg,#3a2f23 0%,#292118 55%,#2f261b 100%); }
+  .plan-card { border-radius:var(--r-xl); box-shadow:var(--shadow-3); }
+  .cash-card { border-radius:var(--r-xl); box-shadow:var(--shadow-3); }
+  .debt-sum { border-radius:var(--r-l); box-shadow:var(--shadow-2); }
+  .add-form { border-radius:var(--r-l); box-shadow:var(--shadow-1); border:1px solid var(--line); }
+  .buy-item, .cat-item, .plan-item, .rev-item, .exp-item, .debt-item, .day-card, .hist-item { border-radius:var(--r-m); box-shadow:var(--shadow-1); }
+  .modal { border-radius:var(--r-l); box-shadow:var(--shadow-3); }
+  .search-box { border-radius:var(--r-m); box-shadow:var(--shadow-1); border:1px solid var(--line); }
+
+  /* --- Кнопки: вес и отклик --- */
+  .add, .auth-go, .auth-tg, .save-bazar { border-radius:var(--r-m); font-weight:800; letter-spacing:-0.01em; transition:transform .15s var(--ease), box-shadow .2s var(--ease), background .2s; }
+  .add { box-shadow:0 2px 8px rgba(217,93,33,.28), 0 8px 20px rgba(217,93,33,.18); }
+  .add:active, .auth-go:active, .auth-tg:active { transform:translateY(1px) scale(.985); box-shadow:0 1px 4px rgba(217,93,33,.25); }
+  .stepper button { border-radius:var(--r-s); transition:transform .12s var(--ease), background .15s; }
+  .stepper button:active { transform:scale(.85); }
+  .card-actions button, .actions button { border-radius:var(--r-s); transition:transform .13s var(--ease), background .15s; }
+  .card-actions button:active, .actions button:active { transform:scale(.97); }
+
+  /* --- Поля ввода: focus ring вместо смены фона --- */
+  .add-form input:focus, .add-form select:focus, .search-box input:focus,
+  #planSearchInput:focus, #debtSearchInput:focus, .stepper input:focus,
+  #revDate:focus, #revAmount:focus, #expNote:focus, #expDate:focus, #expAmount:focus,
+  #debtWho:focus, #debtNote:focus, #debtDate:focus, #debtAmount:focus,
+  #phoneNote:focus, #phoneDate:focus, #phoneAmount:focus, .auth-box input:focus {
+    border-color:var(--accent);
+    box-shadow:0 0 0 3.5px color-mix(in srgb, var(--accent) 18%, transparent);
+    transition:box-shadow .18s var(--ease), border-color .18s;
+  }
+
+  /* --- Навигация: глубокое стекло --- */
+  .bottom-nav { border-radius:32px; backdrop-filter:blur(34px) saturate(1.9); -webkit-backdrop-filter:blur(34px) saturate(1.9); box-shadow:var(--shadow-3), inset 0 1px 1px rgba(255,255,255,.85); }
+  html[data-theme="dark"] .bottom-nav { box-shadow:var(--shadow-3), inset 0 1px 1px rgba(255,255,255,.07); }
+  .bottom-nav button { transition:transform .18s var(--ease); }
+  .bottom-nav button.active { border-radius:22px; }
+  .bottom-nav button:active { transform:scale(.93); }
+  .bottom-nav .bn-ic { transition:transform .22s var(--ease), filter .2s, opacity .2s; }
+  .bottom-nav button.active .bn-ic { transform:translateY(-2px) scale(1.12); }
+
+  /* --- Появление панелей: плавный подъём --- */
+  @keyframes panelIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .panel.active { animation:panelIn .32s var(--ease); }
+  @keyframes cardIn { from { opacity:0; transform:translateY(6px) scale(.99); } to { opacity:1; transform:none; } }
+  .buy-item, .plan-item, .rev-item, .exp-item, .debt-item, .day-card { animation:cardIn .28s var(--ease) backwards; }
+  .modal-bg.show .modal { animation:panelIn .26s var(--ease); }
+  .phone-screen.show { animation:panelIn .3s var(--ease); }
+
+  /* --- Полосы разделов: живой рост --- */
+  .bd-fill, .debt-bar-fill, .mc-bar2, .mc-bar-rev { transition:width .55s var(--ease), height .55s var(--ease); }
+
+  /* --- Шапка: sticky-glass при прокрутке (лёгкий) --- */
+  header { position:sticky; top:0; z-index:30; padding:6px 0 10px; margin:-6px 0 6px;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+
+  /* --- Значок синхронизации: мягкий шиммер при сохранении --- */
+  @keyframes syncPulse { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.45; transform:scale(.92);} }
+  .sync-badge.saving { animation:syncPulse .9s var(--ease) infinite; }
+
+  /* --- Разделители-заголовки: аккуратный кернинг --- */
+  .debt-sep, .plan-day-sep { letter-spacing:.12em; font-size:11px; }
+
+  /* --- Адаптив: планшет и десктоп --- */
+  @media (min-width:700px) {
+    body { max-width:720px; padding-left:32px; padding-right:32px; }
+    .bottom-nav { max-width:600px; bottom:calc(16px + env(safe-area-inset-bottom)); }
+    .total-value { font-size:52px; }
+    .list { gap:10px; }
+  }
+  @media (min-width:1100px) {
+    body { max-width:860px; }
+    .bottom-nav { max-width:640px; }
+  }
+  /* hover только там, где есть мышь */
+  @media (hover:hover) {
+    .buy-item:hover, .cat-item:hover, .debt-item:hover, .rev-item:hover, .exp-item:hover { box-shadow:var(--shadow-2); transform:translateY(-1px); transition:box-shadow .2s var(--ease), transform .2s var(--ease); }
+    .bottom-nav button:hover .bn-ic { opacity:1; filter:none; }
+    .add:hover, .auth-go:hover { filter:brightness(1.05); }
+  }
+
+  /* --- Reduce motion: уважение к настройкам пользователя --- */
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
 </style>
 </head>
 <body>
