@@ -568,6 +568,121 @@
   @media (prefers-reduced-motion:reduce) {
     *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
   }
+  /* ============================================================
+     DESIGN 3.0 — PLATA FINTECH LANGUAGE
+     Чистый白 фон · белые карты 24-32px · orange/red градиент
+     ============================================================ */
+
+  :root {
+    --bg:#f2f2f4; --bg2:#e9e9ec; --card:#ffffff; --line:#ececef;
+    --ink:#0e0e10; --muted:#8e8e93; --accent:#ff4e0d; --accent-d:#e8390a;
+    --green:#34c759; --red:#ff3b30; --soft:#fff1ea; --blue:#007aff;
+    --grad:linear-gradient(135deg,#ff6a00 0%,#ff3d2e 60%,#ff2d55 100%);
+    --shadow-1:0 1px 2px rgba(14,14,16,.03), 0 2px 10px rgba(14,14,16,.04);
+    --shadow-2:0 4px 12px rgba(14,14,16,.05), 0 16px 40px rgba(14,14,16,.09);
+    --shadow-3:0 12px 28px rgba(255,77,13,.18), 0 32px 80px rgba(14,14,16,.14);
+    --r-s:12px; --r-m:18px; --r-l:24px; --r-xl:30px;
+  }
+  html[data-theme="dark"] {
+    --bg:#000000; --bg2:#161618; --card:#1c1c1e; --line:#2c2c2e;
+    --ink:#f5f5f7; --muted:#98989e; --accent:#ff6a2a; --accent-d:#ff4e0d;
+    --green:#30d158; --red:#ff453a; --soft:#3a2418; --blue:#0a84ff;
+    --shadow-1:0 1px 2px rgba(0,0,0,.35), 0 2px 10px rgba(0,0,0,.3);
+    --shadow-2:0 4px 12px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-3:0 12px 28px rgba(255,90,30,.22), 0 32px 80px rgba(0,0,0,.6);
+  }
+
+  body { letter-spacing:-0.014em; }
+  h1 { font-size:24px; font-weight:800; letter-spacing:-0.035em; }
+
+  /* --- Герой-карта: фирменный градиент Plata --- */
+  .total-card, html[data-theme="dark"] .total-card {
+    background:var(--grad);
+    border-radius:var(--r-xl);
+    box-shadow:var(--shadow-3);
+  }
+  .total-card::after { background:radial-gradient(closest-side, rgba(255,255,255,.28), transparent 70%); top:-50%; right:-15%; }
+  .total-label { color:rgba(255,255,255,.85); }
+  .total-value { color:#fff; font-size:46px; font-weight:800; letter-spacing:-0.04em; }
+  .total-value small { color:rgba(255,255,255,.8); }
+  .total-meta { color:rgba(255,255,255,.75); }
+  .compare { background:rgba(255,255,255,.18); }
+  .compare.up { color:#ffe0d6; } .compare.down { color:#d8ffe6; } .compare.same { color:rgba(255,255,255,.85); }
+  .bd-name { color:rgba(255,255,255,.9); }
+  .bd-val { color:#fff; }
+  .bd-track { background:rgba(255,255,255,.22); }
+  .bd-fill { background:#fff !important; }
+  .save-bazar { background:rgba(255,255,255,.2); backdrop-filter:blur(8px); }
+  .save-bazar:active { background:rgba(255,255,255,.32); }
+  .card-actions button { background:rgba(255,255,255,.16); }
+  #resetBtnTop { color:#ffd9cf; }
+
+  /* --- Карты-сводки: белые, жирные чёрные цифры (Plata cards) --- */
+  .cash-card, html[data-theme="dark"] .cash-card,
+  .plan-card { background:var(--card) !important; box-shadow:var(--shadow-2); border-radius:var(--r-xl); border:1px solid var(--line); }
+  .cash-l, .plan-l { color:var(--muted); }
+  .cash-v, .plan-v { color:var(--ink); font-size:38px; font-weight:800; letter-spacing:-0.035em; }
+  .cash-v span, .plan-v span { color:var(--muted); }
+  .cash-v.neg { color:var(--red); } .cash-v.neg span { color:var(--red); }
+  .plan-s { color:var(--muted); }
+  .cb-name { color:var(--muted); }
+  .cb-val { color:var(--ink); }
+  .plan-card .add, .plan-card button { }
+  #planToBuyBtn, .plan-card .save-bazar { background:var(--grad); color:#fff; box-shadow:0 6px 16px rgba(255,77,13,.3); }
+  .cash-card[style] { background:var(--card) !important; } /* перекрываем инлайн-градиент телефона */
+
+  /* --- Долги: мягкие семантические карты --- */
+  .debt-sum { border-radius:var(--r-l); border:none; }
+  .debt-sum.owe { background:linear-gradient(135deg,#ff5f3d,#ff3b30); }
+  .debt-sum.owed { background:linear-gradient(135deg,#28c76f,#20a45b); }
+
+  /* --- Кнопки: градиентный акцент --- */
+  .add, .auth-go { background:var(--grad); box-shadow:0 4px 12px rgba(255,77,13,.3), 0 12px 28px rgba(255,61,46,.2); }
+  .auth-tg { border-radius:var(--r-m); }
+  .sort-row button.active { background:var(--grad); }
+  .mon-seg button.active, .plan-tabs button.active, .auth-tabs button.active { box-shadow:var(--shadow-1); }
+
+  /* --- Карточки списков: воздух и радиус --- */
+  .buy-item, .cat-item, .plan-item, .rev-item, .exp-item, .debt-item, .day-card, .hist-item { border-radius:var(--r-m); border:1px solid var(--line); box-shadow:none; }
+  @media (hover:hover) {
+    .buy-item:hover, .cat-item:hover, .debt-item:hover, .rev-item:hover, .exp-item:hover { box-shadow:var(--shadow-2); border-color:transparent; }
+  }
+  .buy-item.has { background:var(--soft); border-color:var(--accent); }
+  html[data-theme="dark"] .buy-item.has { background:var(--soft); }
+  .buy-sum { color:var(--accent); }
+
+  /* --- Навигация: белая pill, оранжевый актив --- */
+  .bottom-nav { background:color-mix(in srgb, var(--card) 88%, transparent); border:1px solid var(--line); border-radius:34px; box-shadow:var(--shadow-2); }
+  html[data-theme="dark"] .bottom-nav { background:rgba(28,28,30,.85); border-color:rgba(255,255,255,.08); }
+  .bottom-nav button.active { background:var(--soft); }
+  html[data-theme="dark"] .bottom-nav button.active { background:rgba(255,90,30,.16); }
+  .bottom-nav button.active .bn-lb { color:var(--accent); }
+
+  /* --- Шапка: чистая, иконки-капсулы --- */
+  header { background:color-mix(in srgb, var(--bg) 86%, transparent); }
+  .acc-btn, .sync-badge { border:1px solid var(--line); box-shadow:none; }
+  .basket { border-radius:16px; background:var(--grad); box-shadow:0 6px 16px rgba(255,77,13,.3); }
+
+  /* --- Экран входа: onboarding-качество --- */
+  .auth-screen { background:var(--bg); }
+  html[data-theme="dark"] .auth-screen { background:var(--bg); }
+  .auth-box { border-radius:var(--r-xl); box-shadow:var(--shadow-2); border:1px solid var(--line); }
+  .auth-logo { border-radius:20px; background:var(--grad); box-shadow:0 10px 26px rgba(255,77,13,.35); }
+
+  /* --- Страницы Телефон/Аккаунт --- */
+  .acc-avatar { background:var(--grad); box-shadow:0 12px 30px rgba(255,77,13,.35); }
+  .ph-back { border:1px solid var(--line); box-shadow:none; }
+
+  /* --- Секции-заголовки в списке --- */
+  .cat-group-label { color:var(--muted); }
+  .cat-sum { color:var(--ink); }
+
+  /* --- Модалки --- */
+  .modal { border-radius:var(--r-l); border:1px solid var(--line); }
+  .mb-ok { background:var(--grad) !important; }
+
+  /* --- Тёмная тема: инлайновые тёмные карты кассы --- */
+  html[data-theme="dark"] .cash-card[style] { background:var(--card) !important; }
 </style>
 </head>
 <body>
