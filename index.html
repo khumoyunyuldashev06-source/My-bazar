@@ -683,6 +683,44 @@
 
   /* --- Тёмная тема: инлайновые тёмные карты кассы --- */
   html[data-theme="dark"] .cash-card[style] { background:var(--card) !important; }
+  /* --- Главная (dashboard) --- */
+  .home-greet { display:flex; align-items:baseline; justify-content:space-between; margin:2px 2px 14px; }
+  .home-hi { font-size:26px; font-weight:800; letter-spacing:-0.035em; }
+  .home-date { font-size:13px; color:var(--muted); font-weight:600; }
+  .home-hero { margin-bottom:14px; cursor:pointer; }
+  .home-hero .total-value { font-size:42px; }
+  .home-hero-sub { display:flex; gap:14px; margin-top:10px; font-size:13px; font-weight:700; color:rgba(255,255,255,.85); flex-wrap:wrap; }
+  .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+  .home-widget { background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:16px 15px 14px; text-align:left; cursor:pointer; font-family:inherit; transition:transform .15s var(--ease), box-shadow .2s; }
+  .home-widget:active { transform:scale(.97); }
+  .hw-ic { font-size:22px; margin-bottom:8px; }
+  .hw-val { font-size:20px; font-weight:800; letter-spacing:-0.02em; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .hw-lbl { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
+  .home-qa-title { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin:0 2px 10px; }
+  .home-qa { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:22px; }
+  .qa-btn { background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:13px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; transition:transform .13s var(--ease); }
+  .qa-btn:active { transform:scale(.94); }
+  .qa-ic { width:34px; height:34px; border-radius:50%; background:var(--soft); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; }
+  .home-rec { background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:12px 15px; display:flex; align-items:center; gap:11px; }
+  .hr-ic { width:38px; height:38px; flex-shrink:0; border-radius:12px; background:var(--bg2); display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .hr-name { font-size:14.5px; font-weight:700; }
+  .hr-date { font-size:12px; color:var(--muted); font-weight:600; margin-top:1px; }
+  .hr-amt { margin-left:auto; font-weight:800; font-size:14.5px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .hr-amt.pos { color:var(--green); } .hr-amt.neg { color:var(--ink); }
+
+  /* --- Сегменты Базара --- */
+  .sub-seg { display:flex; gap:4px; background:var(--bg2); border-radius:14px; padding:4px; margin:0 0 14px; position:sticky; top:64px; z-index:25; }
+  .sub-seg button { flex:1; background:transparent; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:10px; border-radius:11px; cursor:pointer; font-family:inherit; transition:.15s; }
+  .sub-seg button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow-1); }
+
+  /* --- Меню Ещё --- */
+  .more-title { font-size:26px; font-weight:800; letter-spacing:-0.035em; margin:2px 2px 16px; }
+  .more-group { background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; margin-bottom:14px; }
+  .more-row { width:100%; display:flex; align-items:center; gap:13px; padding:16px 17px; background:transparent; border:none; border-bottom:1px solid var(--line); font-size:15.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; text-align:left; }
+  .more-row:last-child { border-bottom:none; }
+  .more-row:active { background:var(--bg2); }
+  .mr-ic { font-size:19px; width:26px; text-align:center; }
+  .mr-arr { margin-left:auto; color:var(--muted); font-size:19px; font-weight:600; }
 </style>
 </head>
 <body>
@@ -710,25 +748,82 @@
     <div class="title-row">
       <div class="basket">🧺</div>
       <div style="flex:1"><h1>My Business</h1><span class="date" id="today"></span></div>
-      <button class="acc-btn" id="themeBtn" title="Тема">🌙</button>
-      <button class="acc-btn" id="phoneBtn" title="Телефон">📞</button>
-      <button class="acc-btn" id="langBtn" title="Язык">🇷🇺</button>
-      <button class="acc-btn" id="accBtn" title="Аккаунт">👤</button>
       <div class="sync-badge" id="syncBadge" title="Синхронизация">☁️</div>
     </div>
   </header>
 
   <nav class="bottom-nav">
-    <button id="tabBuy" class="active"><span class="bn-ic">🧺</span><span class="bn-lb" data-ru="Базар">Базар</span></button>
-    <button id="tabPlan"><span class="bn-ic">📝</span><span class="bn-lb" data-ru="Планы">Планы</span></button>
-    <button id="tabCat"><span class="bn-ic">📦</span><span class="bn-lb" data-ru="Каталог">Каталог</span></button>
+    <button id="tabHome" class="active"><span class="bn-ic">🏠</span><span class="bn-lb" data-ru="Главная">Главная</span></button>
+    <button id="tabBuy"><span class="bn-ic">🧺</span><span class="bn-lb" data-ru="Базар">Базар</span></button>
     <button id="tabCash"><span class="bn-ic">💰</span><span class="bn-lb" data-ru="Касса">Касса</span></button>
-    <button id="tabHist"><span class="bn-ic">🕘</span><span class="bn-lb" data-ru="История">История</span></button>
     <button id="tabDebt"><span class="bn-ic">🤝</span><span class="bn-lb" data-ru="Долги">Долги</span></button>
-    <button id="tabMon"><span class="bn-ic">📊</span><span class="bn-lb" data-ru="Монитор">Монитор</span></button>
+    <button id="tabMore"><span class="bn-ic">⋯</span><span class="bn-lb" data-ru="Ещё">Ещё</span></button>
   </nav>
 
-  <div class="panel active" id="panelBuy">
+  <div class="panel active" id="panelHome">
+    <div class="home-greet">
+      <div class="home-hi" id="homeHi">Салом! 👋</div>
+      <div class="home-date" id="homeDate"></div>
+    </div>
+    <div class="total-card home-hero" id="homeHeroCard">
+      <div class="total-label" data-ru="Прибыль за месяц">Прибыль за месяц</div>
+      <div class="total-value" id="homeProfit">0 <small>сум</small></div>
+      <div class="home-hero-sub" id="homeHeroSub"></div>
+    </div>
+    <div class="home-grid">
+      <button class="home-widget" id="hwBazar">
+        <div class="hw-ic">🧺</div>
+        <div class="hw-val" id="hwBazarVal">0</div>
+        <div class="hw-lbl" data-ru="Текущий базар">Текущий базар</div>
+      </button>
+      <button class="home-widget" id="hwDebt">
+        <div class="hw-ic">🤝</div>
+        <div class="hw-val" id="hwDebtVal">0</div>
+        <div class="hw-lbl" data-ru="Я должен">Я должен</div>
+      </button>
+      <button class="home-widget" id="hwPhone">
+        <div class="hw-ic">📞</div>
+        <div class="hw-val" id="hwPhoneVal">0</div>
+        <div class="hw-lbl" data-ru="Телефон · месяц">Телефон · месяц</div>
+      </button>
+      <button class="home-widget" id="hwPlan">
+        <div class="hw-ic">📝</div>
+        <div class="hw-val" id="hwPlanVal">0</div>
+        <div class="hw-lbl" data-ru="План закупки">План закупки</div>
+      </button>
+    </div>
+    <div class="home-qa-title" data-ru="Быстрые действия">Быстрые действия</div>
+    <div class="home-qa">
+      <button class="qa-btn" id="qaRev"><span class="qa-ic">＋</span><span data-ru="Выручка">Выручка</span></button>
+      <button class="qa-btn" id="qaExp"><span class="qa-ic">−</span><span data-ru="Расход">Расход</span></button>
+      <button class="qa-btn" id="qaDebt"><span class="qa-ic">🤝</span><span data-ru="Долг">Долг</span></button>
+      <button class="qa-btn" id="qaPhone"><span class="qa-ic">📞</span><span data-ru="Телефон">Телефон</span></button>
+    </div>
+    <div class="home-qa-title" data-ru="Последние операции">Последние операции</div>
+    <div class="list" id="homeRecent"></div>
+  </div>
+
+  <div class="sub-seg" id="buySeg" style="display:none">
+    <button data-bs="Buy" class="active" data-ru="Закупка">Закупка</button>
+    <button data-bs="Plan" data-ru="План">План</button>
+    <button data-bs="Cat" data-ru="Каталог">Каталог</button>
+  </div>
+
+  <div class="panel" id="panelMore">
+    <div class="more-title" data-ru="Ещё">Ещё</div>
+    <div class="more-group">
+      <button class="more-row" id="moreHist"><span class="mr-ic">🕘</span><span data-ru="История базаров">История базаров</span><span class="mr-arr">›</span></button>
+      <button class="more-row" id="moreMon"><span class="mr-ic">📊</span><span data-ru="Монитор">Монитор</span><span class="mr-arr">›</span></button>
+      <button class="more-row" id="phoneBtn"><span class="mr-ic">📞</span><span data-ru="Телефон (таксофон)">Телефон (таксофон)</span><span class="mr-arr">›</span></button>
+    </div>
+    <div class="more-group">
+      <button class="more-row" id="accBtn"><span class="mr-ic">👤</span><span data-ru="Мой аккаунт">Мой аккаунт</span><span class="mr-arr">›</span></button>
+      <button class="more-row" id="themeBtn"><span class="mr-ic" id="themeIcon">🌙</span><span data-ru="Тема">Тема</span><span class="mr-arr">›</span></button>
+      <button class="more-row" id="langBtn"><span class="mr-ic" id="langIcon">🇷🇺</span><span data-ru="Язык">Язык</span><span class="mr-arr">›</span></button>
+    </div>
+  </div>
+
+  <div class="panel" id="panelBuy">
     <div class="total-card">
       <div class="total-label" data-ru="Итого за базар">Итого за базар</div>
       <div class="total-value" id="total">0 <small>сум</small></div>
@@ -1073,7 +1168,10 @@
     'сум':'сўм','шт':'дона','Поиск':'Қидириш',
     '📞 Телефон (таксофон)':'📞 Телефон (таксофон)','‹ Назад':'‹ Орқага','Прибыль с телефона за период':'Давр учун телефон фойдаси',
     'Записать прибыль за день':'Кунлик фойдани ёзиш','Заметка (необязательно)':'Эслатма (ихтиёрий)','Прибыль':'Фойда','Записать прибыль':'Фойдани ёзиш',
-    'Скопировать':'Нусха олиш'
+    'Скопировать':'Нусха олиш',
+    'Главная':'Асосий','Ещё':'Яна','Прибыль за месяц':'Ойлик фойда','Текущий базар':'Жорий бозор','Телефон · месяц':'Телефон · ой','План закупки':'Харид режаси',
+    'Быстрые действия':'Тезкор амаллар','Выручка':'Тушум','Расход':'Харажат','Долг':'Қарз','Телефон':'Телефон','Последние операции':'Сўнгги амаллар',
+    'Закупка':'Харид','План':'Режа','История базаров':'Бозорлар тарихи','Монитор':'Монитор','Телефон (таксофон)':'Телефон (таксофон)','Мой аккаунт':'Менинг аккаунтим','Тема':'Мавзу','Язык':'Тил'
   };
   function getLang(){ return localStorage.getItem('bazar_lang')||'ru'; }
   function setLang(l){ localStorage.setItem('bazar_lang',l); applyLang(); }
@@ -1087,7 +1185,7 @@
       if(el.placeholder!==undefined&&el.tagName==='INPUT'){ el.placeholder=uz?(I18N[ru]||ru):ru; }
       else { el.textContent=uz?(I18N[ru]||ru):ru; }
     });
-    const lb=document.getElementById('langBtn'); if(lb)lb.textContent=uz?'🇺🇿':'🇷🇺';
+    const li=document.getElementById('langIcon'); if(li)li.textContent=uz?'🇺🇿':'🇷🇺';
   }
 
   // ===== Облако (Supabase) =====
@@ -1722,7 +1820,7 @@
           const fb=sections[0]?sections[0].name:'Продукты';
           catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
           qty={}; saveCat(); saveHist(); saveQty();
-          fillCatSelect(); renderBuy(); renderCat(); renderHist();
+          fillCatSelect(); renderBuy(); renderCat(); renderHist(); renderHome&&renderHome();
         });
       }catch(err){ modal('Ошибка','Файл не подходит. Загрузи копию, сохранённую этим приложением.','Ок',null,true); }
       $('bkFile').value='';
@@ -2275,21 +2373,79 @@
   });
   function setDebtDefaultDate(){ const t=new Date(); const s=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; $('debtDate').value=s; $('debtDate2').value=s; }
 
+  const NAV_MAP={Home:'Home',Buy:'Buy',Plan:'Buy',Cat:'Buy',Cash:'Cash',Debt:'Debt',Hist:'More',Mon:'More',More:'More'};
   function switchTab(t){
-    ['Buy','Plan','Cat','Cash','Debt','Hist','Mon'].forEach(x=>{ $('tab'+x).classList.toggle('active',x===t); $('panel'+x).classList.toggle('active',x===t); });
+    ['Home','Buy','Plan','Cat','Cash','Debt','Hist','Mon','More'].forEach(x=>{ const p=$('panel'+x); if(p)p.classList.toggle('active',x===t); });
+    const nav=NAV_MAP[t]||'Home';
+    ['Home','Buy','Cash','Debt','More'].forEach(x=>$('tab'+x).classList.toggle('active',x===nav));
+    // сегмент-бар Базара виден только в контексте закупки
+    const inBuy=['Buy','Plan','Cat'].includes(t);
+    $('buySeg').style.display=inBuy?'flex':'none';
+    if(inBuy)[...$('buySeg').children].forEach(b=>b.classList.toggle('active',b.dataset.bs===t));
+    if(t==='Home')renderHome();
     if(t==='Hist')renderHist();
     if(t==='Mon')renderMon();
     if(t==='Plan'){ fillPlanSelect(); renderPlan(); }
     if(t==='Cash'){ setRevDefaultDate(); renderCash(); }
     if(t==='Debt'){ setDebtDefaultDate(); renderDebt(); }
   }
+  $('tabHome').addEventListener('click',()=>switchTab('Home'));
   $('tabBuy').addEventListener('click',()=>switchTab('Buy'));
-  $('tabPlan').addEventListener('click',()=>switchTab('Plan'));
-  $('tabCat').addEventListener('click',()=>switchTab('Cat'));
   $('tabCash').addEventListener('click',()=>switchTab('Cash'));
   $('tabDebt').addEventListener('click',()=>switchTab('Debt'));
-  $('tabHist').addEventListener('click',()=>switchTab('Hist'));
-  $('tabMon').addEventListener('click',()=>switchTab('Mon'));
+  $('tabMore').addEventListener('click',()=>switchTab('More'));
+  $('buySeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-bs]'); if(b)switchTab(b.dataset.bs); });
+  $('moreHist').addEventListener('click',()=>switchTab('Hist'));
+  $('moreMon').addEventListener('click',()=>switchTab('Mon'));
+
+  // ===== Главная: дашборд =====
+  function renderHome(){
+    // приветствие
+    const name=cloudUserId.startsWith('usr_')?cloudUserId.slice(4):'';
+    $('homeHi').textContent=(getLang()==='uz'?'Салом':'Салом')+(name?', '+name:'')+'! 👋';
+    $('homeDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+    // прибыль месяца = выручка − закупка − расходы (+ телефон отдельно в виджете)
+    const cut=(()=>{ const c=new Date(); c.setDate(1); c.setHours(0,0,0,0); return c; })();
+    const inM=d=>new Date(d)>=cut;
+    const rev=revenue.filter(r=>inM(r.date)).reduce((s,r)=>s+r.amount,0);
+    const buy=hist.filter(h=>inM(h.date)).reduce((s,h)=>s+h.total,0);
+    const oth=expenses.filter(x=>inM(x.date)).reduce((s,x)=>s+x.amount,0);
+    const profit=rev-buy-oth;
+    const hp=$('homeProfit');
+    hp.innerHTML=`${profit<0?'−':''}${fmt(Math.abs(profit))} <small>сум</small>`;
+    $('homeHeroSub').innerHTML=`<span>↑ ${fmt(rev)}</span><span>↓ ${fmt(buy+oth)}</span>`;
+    // виджеты
+    $('hwBazarVal').textContent=fmt(total());
+    $('hwDebtVal').textContent=fmt(debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+debtRemaining(d),0));
+    $('hwPhoneVal').textContent=fmt(phone.filter(p=>inM(p.date)).reduce((s,p)=>s+p.amount,0));
+    $('hwPlanVal').textContent=fmt(planSum());
+    // последние операции (все типы, свежие сверху)
+    const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+    const ev=[];
+    revenue.forEach(r=>ev.push({d:r.date,ic:'💵',name:'Выручка',amt:'+ '+fmt(r.amount),cls:'pos'}));
+    expenses.forEach(x=>ev.push({d:x.date,ic:'🧾',name:esc(x.note||'Расход'),amt:'− '+fmt(x.amount),cls:'neg'}));
+    hist.forEach(h=>ev.push({d:h.date,ic:'🧺',name:'Базар · '+h.count+' тов.',amt:'− '+fmt(h.total),cls:'neg'}));
+    phone.forEach(p=>ev.push({d:p.date,ic:'📞',name:'Телефон',amt:'+ '+fmt(p.amount),cls:'pos'}));
+    ev.sort((a,b)=>new Date(b.d)-new Date(a.d));
+    const top=ev.slice(0,6);
+    $('homeRecent').innerHTML=top.length?top.map(e=>{
+      const d=new Date(e.d);
+      return `<div class="home-rec"><div class="hr-ic">${e.ic}</div>
+        <div><div class="hr-name">${e.name}</div><div class="hr-date">${d.getDate()} ${MON[d.getMonth()]}</div></div>
+        <span class="hr-amt ${e.cls}">${e.amt}</span></div>`;
+    }).join(''):'<div class="empty">Операций пока нет 📊<br>Начни с закупки или выручки.</div>';
+  }
+  // виджеты — переходы
+  $('hwBazar').addEventListener('click',()=>switchTab('Buy'));
+  $('hwDebt').addEventListener('click',()=>switchTab('Debt'));
+  $('hwPhone').addEventListener('click',openPhone);
+  $('hwPlan').addEventListener('click',()=>switchTab('Plan'));
+  $('homeHeroCard').addEventListener('click',()=>switchTab('Cash'));
+  // быстрые действия
+  $('qaRev').addEventListener('click',()=>{ switchTab('Cash'); const b=document.querySelector('#cashMode button[data-cm="rev"]'); if(b)b.click(); setTimeout(()=>{ const a=$('revAmount'); if(a)a.focus(); },200); });
+  $('qaExp').addEventListener('click',()=>{ switchTab('Cash'); const b=document.querySelector('#cashMode button[data-cm="exp"]'); if(b)b.click(); setTimeout(()=>{ const a=$('expNote'); if(a)a.focus(); },200); });
+  $('qaDebt').addEventListener('click',()=>switchTab('Debt'));
+  $('qaPhone').addEventListener('click',openPhone);
 
   function doCopy(btnId){
     let out=[];
@@ -2379,7 +2535,7 @@
   function applyTheme(){
     const dark=getTheme()==='dark';
     document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-    const tb=$('themeBtn'); if(tb)tb.textContent=dark?'☀️':'🌙';
+    const ti=$('themeIcon'); if(ti)ti.textContent=dark?'☀️':'🌙';
     // цвет статус-бара под тему
     const meta=document.querySelector('meta[name="theme-color"]');
     if(meta)meta.setAttribute('content',dark?'#1a1713':'#f4f1ea');
@@ -2483,7 +2639,7 @@
 
   fillCatSelect();
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
-  renderBuy(); renderCat(); renderHist();
+  renderBuy(); renderCat(); renderHist(); renderHome();
   applyLang();
 
   // проверка сессии при старте
