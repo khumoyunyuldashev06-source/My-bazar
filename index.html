@@ -741,7 +741,11 @@
   .plan-sum-in { font-size:13.5px; font-weight:800; color:var(--accent); margin-top:3px; font-variant-numeric:tabular-nums; }
   .plan-item .plan-del { margin-left:4px; }
   /* --- Калькулятор: плавающая кнопка + шторка --- */
-  .calc-fab { position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); width:54px; height:54px; border-radius:50%; border:none; background:var(--grad); color:#fff; font-size:23px; cursor:pointer; z-index:60; box-shadow:0 8px 20px rgba(255,77,13,.4), 0 16px 40px rgba(14,14,16,.18); transition:transform .18s var(--ease); }
+  .calc-fab { position:fixed; right:16px; bottom:calc(112px + env(safe-area-inset-bottom)); width:52px; height:52px; border-radius:50%; border:none; background:var(--grad); color:#fff; font-size:22px; cursor:pointer; z-index:60; box-shadow:0 8px 20px rgba(255,77,13,.4), 0 16px 40px rgba(14,14,16,.18); transition:transform .18s var(--ease), opacity .2s; }
+  .calc-head { display:flex; align-items:center; justify-content:space-between; padding:0 4px 4px; }
+  .calc-title { font-size:15px; font-weight:800; color:var(--muted); }
+  .calc-x { width:34px; height:34px; border-radius:50%; border:none; background:var(--bg2); color:var(--ink); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .calc-x:active { transform:scale(.9); }
   .calc-fab:active { transform:scale(.9); }
   .calc-sheet { position:fixed; inset:0; z-index:95; background:rgba(14,14,16,.4); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:none; align-items:flex-end; justify-content:center; }
   .calc-sheet.show { display:flex; animation:fadeIn .2s var(--ease); }
@@ -1111,6 +1115,10 @@
   <div class="calc-sheet" id="calcSheet">
     <div class="calc-panel">
       <div class="calc-grip"></div>
+      <div class="calc-head">
+        <span class="calc-title">🧮 Калькулятор</span>
+        <button class="calc-x" id="calcClose">✕</button>
+      </div>
       <div class="calc-screen">
         <div class="calc-expr" id="calcExpr"></div>
         <div class="calc-out" id="calcOut">0</div>
@@ -2753,6 +2761,7 @@
     $('calcOut').textContent=r===null?(calcExpr?'…':'0'):calcFmtNum(r);
   }
   $('calcFab').addEventListener('click',()=>{ $('calcSheet').classList.add('show'); calcRender(); });
+  $('calcClose').addEventListener('click',()=>$('calcSheet').classList.remove('show'));
   $('calcSheet').addEventListener('click',e=>{ if(e.target===$('calcSheet'))$('calcSheet').classList.remove('show'); });
   $('calcKeys').addEventListener('click',e=>{
     const b=e.target.closest('button[data-k]'); if(!b)return;
