@@ -33,8 +33,6 @@
   html[data-theme="dark"] .auth-box input:focus,
   html[data-theme="dark"] #phoneNote:focus, html[data-theme="dark"] #phoneDate:focus, html[data-theme="dark"] #phoneAmount:focus,
   html[data-theme="dark"] input:focus { background:#302a22 !important; }
-  html[data-theme="dark"] .bottom-nav { background:linear-gradient(180deg,rgba(40,35,28,.85),rgba(30,26,20,.7)); border-color:rgba(255,255,255,.08); }
-  html[data-theme="dark"] .bottom-nav button.active { background:linear-gradient(180deg,rgba(80,70,55,.6),rgba(60,52,42,.4)); }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   /* моноширинные цифры для сумм — не прыгают, строже */
   .total-value, .cash-v, .plan-total, #debtOwe, #debtOwed, .buy-sum, .buy-price, .cat-sum, .day-profit, .rev-amt, .exp-amt, .debt-amt, #phoneTotal, .bd-val, .mc-bar-val, .mp-profit { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
@@ -85,20 +83,6 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   h1 { font-size:23px; font-weight:800; letter-spacing:-0.6px; line-height:1.05; }
   .date { font-size:13px; color:var(--muted); font-weight:600; }
-
-  .bottom-nav { position:fixed; bottom:calc(10px + env(safe-area-inset-bottom)); left:12px; right:12px; max-width:536px; margin:0 auto; display:flex; padding:8px 6px; z-index:40;
-    background:linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.55));
-    backdrop-filter:blur(28px) saturate(1.7); -webkit-backdrop-filter:blur(28px) saturate(1.7);
-    border-radius:30px; border:1px solid rgba(255,255,255,.65);
-    box-shadow:0 8px 32px rgba(43,37,32,.16), 0 2px 8px rgba(43,37,32,.08), inset 0 1px 1px rgba(255,255,255,.9), inset 0 -1px 2px rgba(255,255,255,.3);
-  }
-  .bottom-nav::before { content:""; position:absolute; inset:0; border-radius:30px; padding:1px; background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,0) 40%); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
-  .bottom-nav button { flex:1; background:transparent; border:none; display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; cursor:pointer; font-family:inherit; border-radius:18px; transition:.18s; position:relative; }
-  .bottom-nav .bn-ic { font-size:21px; line-height:1; filter:grayscale(.5); opacity:.5; transition:.18s; }
-  .bottom-nav .bn-lb { font-size:10px; font-weight:700; color:var(--muted); transition:.18s; }
-  .bottom-nav button.active { background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.5)); box-shadow:0 2px 8px rgba(200,84,30,.18), inset 0 1px 1px rgba(255,255,255,.9); }
-  .bottom-nav button.active .bn-ic { filter:none; opacity:1; transform:translateY(-1px) scale(1.08); }
-  .bottom-nav button.active .bn-lb { color:var(--accent); }
 
   .total-card { background:linear-gradient(160deg,#2b2520,#3a322a); color:#fff; border-radius:22px; padding:22px 24px; margin-bottom:18px; box-shadow:0 12px 32px rgba(43,37,32,.22); position:relative; overflow:hidden; }
   .total-card::after { content:""; position:absolute; top:-40px; right:-30px; width:160px; height:160px; background:radial-gradient(circle,rgba(200,84,30,.35),transparent 70%); pointer-events:none; }
@@ -515,13 +499,6 @@
   }
 
   /* --- Навигация: глубокое стекло --- */
-  .bottom-nav { border-radius:32px; backdrop-filter:blur(34px) saturate(1.9); -webkit-backdrop-filter:blur(34px) saturate(1.9); box-shadow:var(--shadow-3), inset 0 1px 1px rgba(255,255,255,.85); }
-  html[data-theme="dark"] .bottom-nav { box-shadow:var(--shadow-3), inset 0 1px 1px rgba(255,255,255,.07); }
-  .bottom-nav button { transition:transform .18s var(--ease); }
-  .bottom-nav button.active { border-radius:22px; }
-  .bottom-nav button:active { transform:scale(.93); }
-  .bottom-nav .bn-ic { transition:transform .22s var(--ease), filter .2s, opacity .2s; }
-  .bottom-nav button.active .bn-ic { transform:translateY(-2px) scale(1.12); }
 
   /* --- Появление панелей: плавный подъём --- */
   @keyframes panelIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
@@ -535,9 +512,7 @@
   .bd-fill, .debt-bar-fill, .mc-bar2, .mc-bar-rev { transition:width .55s var(--ease), height .55s var(--ease); }
 
   /* --- Шапка: sticky-glass при прокрутке (лёгкий) --- */
-  header { position:sticky; top:0; z-index:30; padding:6px 0 10px; margin:-6px 0 6px;
-    background:color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+  header { position:relative; z-index:1; padding:0 0 14px; margin:0; background:transparent; }
 
   /* --- Значок синхронизации: мягкий шиммер при сохранении --- */
   @keyframes syncPulse { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.45; transform:scale(.92);} }
@@ -549,18 +524,15 @@
   /* --- Адаптив: планшет и десктоп --- */
   @media (min-width:700px) {
     body { max-width:720px; padding-left:32px; padding-right:32px; }
-    .bottom-nav { max-width:600px; bottom:calc(16px + env(safe-area-inset-bottom)); }
     .total-value { font-size:52px; }
     .list { gap:10px; }
   }
   @media (min-width:1100px) {
     body { max-width:860px; }
-    .bottom-nav { max-width:640px; }
   }
   /* hover только там, где есть мышь */
   @media (hover:hover) {
     .buy-item:hover, .cat-item:hover, .debt-item:hover, .rev-item:hover, .exp-item:hover { box-shadow:var(--shadow-2); transform:translateY(-1px); transition:box-shadow .2s var(--ease), transform .2s var(--ease); }
-    .bottom-nav button:hover .bn-ic { opacity:1; filter:none; }
     .add:hover, .auth-go:hover { filter:brightness(1.05); }
   }
 
@@ -652,14 +624,9 @@
   .buy-sum { color:var(--accent); }
 
   /* --- Навигация: белая pill, оранжевый актив --- */
-  .bottom-nav { background:color-mix(in srgb, var(--card) 88%, transparent); border:1px solid var(--line); border-radius:34px; box-shadow:var(--shadow-2); }
-  html[data-theme="dark"] .bottom-nav { background:rgba(28,28,30,.85); border-color:rgba(255,255,255,.08); }
-  .bottom-nav button.active { background:var(--soft); }
-  html[data-theme="dark"] .bottom-nav button.active { background:rgba(255,90,30,.16); }
-  .bottom-nav button.active .bn-lb { color:var(--accent); }
 
   /* --- Шапка: чистая, иконки-капсулы --- */
-  header { background:color-mix(in srgb, var(--bg) 86%, transparent); }
+  
   .acc-btn, .sync-badge { border:1px solid var(--line); box-shadow:none; }
   .basket { border-radius:16px; background:var(--grad); box-shadow:0 6px 16px rgba(255,77,13,.3); }
 
@@ -709,7 +676,12 @@
   .hr-amt.pos { color:var(--green); } .hr-amt.neg { color:var(--ink); }
 
   /* --- Сегменты Базара --- */
-  .sub-seg { display:flex; gap:4px; background:var(--bg2); border-radius:14px; padding:4px; margin:0 0 14px; position:sticky; top:64px; z-index:25; }
+  .sub-seg { display:flex; gap:4px; border-radius:15px; padding:4px; margin:0 0 14px;
+    position:sticky; top:calc(6px + env(safe-area-inset-top)); z-index:40;
+    background:color-mix(in srgb, var(--bg2) 88%, transparent);
+    backdrop-filter:blur(22px) saturate(1.6); -webkit-backdrop-filter:blur(22px) saturate(1.6);
+    box-shadow:0 4px 16px rgba(14,14,16,.06); }
+  html[data-theme="dark"] .sub-seg { background:rgba(33,29,24,.88); box-shadow:0 4px 16px rgba(0,0,0,.4); }
   .sub-seg button { flex:1; background:transparent; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:10px; border-radius:11px; cursor:pointer; font-family:inherit; transition:.15s; }
   .sub-seg button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow-1); }
 
@@ -764,9 +736,74 @@
   .calc-keys .ck-eq { background:var(--grad); color:#fff; box-shadow:0 4px 12px rgba(255,77,13,.3); }
   html[data-theme="dark"] .calc-keys button { background:#2a2a2c; }
   html[data-theme="dark"] .calc-keys .ck-op { background:var(--soft); }
+  .sec-emoji { font-size:15px; line-height:1; display:inline-block; vertical-align:-0.12em; }
+
+  /* ============================================================
+     FLOATING NAVIGATION — custom iOS-grade liquid glass
+     ============================================================ */
+  .bottom-nav{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:calc(14px + env(safe-area-inset-bottom));
+    width:calc(100% - 28px); max-width:430px;
+    display:flex; align-items:stretch; gap:2px;
+    padding:7px 8px; z-index:70;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.72));
+    backdrop-filter:blur(40px) saturate(200%); -webkit-backdrop-filter:blur(40px) saturate(200%);
+    border:.5px solid rgba(255,255,255,.85);
+    box-shadow:
+      0 1px 1px rgba(14,14,16,.04),
+      0 8px 24px rgba(14,14,16,.10),
+      0 24px 60px rgba(14,14,16,.16),
+      inset 0 1px 1px rgba(255,255,255,.95),
+      inset 0 -1px 2px rgba(255,255,255,.4);
+    isolation:isolate;
+  }
+  html[data-theme="dark"] .bottom-nav{
+    background:linear-gradient(180deg, rgba(48,48,52,.82), rgba(28,28,32,.72));
+    border-color:rgba(255,255,255,.12);
+    box-shadow:
+      0 8px 24px rgba(0,0,0,.5),
+      0 24px 60px rgba(0,0,0,.6),
+      inset 0 1px 1px rgba(255,255,255,.12);
+  }
+  /* морфинг-подсветка активной вкладки */
+  .nv-pill{
+    position:absolute; top:7px; bottom:7px; left:0; width:0;
+    border-radius:999px; z-index:-1; opacity:0;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent) 9%, transparent));
+    box-shadow:inset 0 0 0 .5px color-mix(in srgb, var(--accent) 22%, transparent);
+    transition:left .42s cubic-bezier(.32,.72,0,1), width .42s cubic-bezier(.32,.72,0,1), opacity .25s ease;
+  }
+  html[data-theme="dark"] .nv-pill{ background:linear-gradient(180deg, rgba(255,120,60,.24), rgba(255,120,60,.12)); }
+  .bottom-nav button{
+    flex:1; position:relative; background:none; border:none; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    padding:8px 2px 6px; border-radius:999px; -webkit-tap-highlight-color:transparent;
+    transition:transform .2s cubic-bezier(.32,.72,0,1);
+  }
+  .bottom-nav button:active{ transform:scale(.9); }
+  .bn-ic{ position:relative; width:25px; height:25px; display:grid; place-items:center; }
+  .bn-ic .nv-o, .bn-ic .nv-f{ grid-area:1/1; transition:opacity .22s ease, transform .3s cubic-bezier(.32,.72,0,1); }
+  .bn-ic .nv-o{ color:var(--muted); opacity:1; }
+  .bn-ic .nv-f{ color:var(--accent); opacity:0; transform:scale(.82); }
+  .bottom-nav button.active .nv-o{ opacity:0; transform:scale(1.1); }
+  .bottom-nav button.active .nv-f{ opacity:1; transform:scale(1); }
+  .bn-lb{ font-size:10.5px; font-weight:650; letter-spacing:-0.01em; color:var(--muted); transition:color .22s ease, font-weight .2s; }
+  .bottom-nav button.active .bn-lb{ color:var(--accent); font-weight:800; }
+  /* бейдж уведомлений */
+  .nv-badge{ position:absolute; top:-4px; right:-7px; min-width:17px; height:17px; padding:0 5px;
+    border-radius:999px; background:#ff3b30; color:#fff; font-size:10.5px; font-weight:800;
+    display:none; align-items:center; justify-content:center; line-height:1;
+    box-shadow:0 0 0 2px var(--card), 0 2px 6px rgba(255,59,48,.45);
+    font-variant-numeric:tabular-nums; }
+  html[data-theme="dark"] .nv-badge{ box-shadow:0 0 0 2px #2b2b2f, 0 2px 6px rgba(255,59,48,.5); }
+  .nv-badge.show{ display:flex; animation:badgePop .4s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes badgePop{ from{transform:scale(0)} to{transform:scale(1)} }
+  @media (min-width:700px){ .bottom-nav{ max-width:460px; bottom:calc(20px + env(safe-area-inset-bottom)); } }
   /* --- SVG icon system --- */
   .ic { display:inline-block; vertical-align:-0.18em; flex-shrink:0; }
-  .bn-ic, .hw-ic, .qa-ic, .mr-ic, .hr-ic, .basket, .acc-avatar, .auth-logo,
+  .hw-ic, .qa-ic, .mr-ic, .hr-ic, .basket, .acc-avatar, .auth-logo,
   .calc-fab, .calc-x, .sync-badge, .search-ic, .pen, .plan-ic, .exp-ic,
   .debt-done-btn, .debt-pay-btn, .debt-del, .rev-del, .exp-del, .plan-del, .icon-btn,
   .cat-group-label, .bd-name, .leg-name, .bar-name, .hd-cat, .bub-name, .plan-res-ic,
@@ -774,7 +811,7 @@
   .plan-tabs button, .mon-seg button, .auth-tg, .acc-logout, .mb-ok, .mb-cancel {
     display:inline-flex; align-items:center; gap:7px;
   }
-  .bn-ic, .hw-ic, .qa-ic, .hr-ic, .basket, .acc-avatar, .auth-logo, .calc-fab,
+  .hw-ic, .qa-ic, .hr-ic, .basket, .acc-avatar, .auth-logo, .calc-fab,
   .calc-x, .sync-badge, .debt-done-btn, .debt-pay-btn, .debt-del, .rev-del,
   .exp-del, .plan-del, .icon-btn, .search-ic, .plan-ic, .exp-ic, .plan-res-ic {
     justify-content:center;
@@ -784,7 +821,7 @@
   .add, .save-bazar, .auth-tg, .acc-logout, .mb-ok, .mb-cancel,
   .card-actions button, .actions button, .plan-tabs button, .mon-seg button { justify-content:center; }
   .stepper button { display:flex; align-items:center; justify-content:center; }
-  .sec-icon-inp { font-size:13px; }
+  .sec-icon-inp { font-size:20px; }
 </style>
 </head>
 <body>
@@ -816,12 +853,13 @@
     </div>
   </header>
 
-  <nav class="bottom-nav">
-    <button id="tabHome" class="active"><span class="bn-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="bn-lb" data-ru="Главная">Главная</span></button>
-    <button id="tabBuy"><span class="bn-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></span><span class="bn-lb" data-ru="Базар">Базар</span></button>
-    <button id="tabCash"><span class="bn-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M16 12h3"/></svg></span><span class="bn-lb" data-ru="Касса">Касса</span></button>
-    <button id="tabDebt"><span class="bn-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.9-3.9a2 2 0 0 0-1.7-.6l-3.9.5a2 2 0 0 1-1.6-.5L7 8"/><path d="m21 3-3.6 3.6"/><path d="M3 8 7 4l3 3"/></svg></span><span class="bn-lb" data-ru="Долги">Долги</span></button>
-    <button id="tabMore"><span class="bn-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></span><span class="bn-lb" data-ru="Ещё">Ещё</span></button>
+  <nav class="bottom-nav" id="bottomNav">
+    <span class="nv-pill" id="navPill"></span>
+    <button id="tabHome" class="active"><span class="bn-ic"><svg class="nv-o" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 10.3 12 3.6l8.8 6.7V20a1.2 1.2 0 0 1-1.2 1.2h-4.4v-6.1H8.8v6.1H4.4A1.2 1.2 0 0 1 3.2 20z"/></svg><svg class="nv-f" width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.36 3.05a1 1 0 0 1 1.28 0l8.4 6.4a1 1 0 0 1 .36.77V20a2 2 0 0 1-2 2h-3.9v-5.6a1 1 0 0 0-1-1h-4.2a1 1 0 0 0-1 1V22H5a2 2 0 0 1-2-2v-9.78a1 1 0 0 1 .36-.77z"/></svg></span><span class="bn-lb" data-ru="Главная">Главная</span></button>
+    <button id="tabBuy"><span class="bn-ic"><svg class="nv-o" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 9.6h14.8l-1.25 9.3a2 2 0 0 1-2 1.7H7.85a2 2 0 0 1-2-1.7z"/><path d="M8.9 9.6 12 3.2l3.1 6.4"/><path d="M2.8 9.6h18.4"/></svg><svg class="nv-f" width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12.9 3.13a1 1 0 0 0-1.8 0L8.36 8.6H2.8a1 1 0 0 0 0 2h.62l1.19 8.86A2.6 2.6 0 0 0 7.19 21.7h9.62a2.6 2.6 0 0 0 2.58-2.24l1.19-8.86h.62a1 1 0 1 0 0-2h-5.56zm-2.32 5.47L12 5.8l1.42 2.8zM9.5 13a1 1 0 0 1 1 1v3.4a1 1 0 1 1-2 0V14a1 1 0 0 1 1-1m5 0a1 1 0 0 1 1 1v3.4a1 1 0 1 1-2 0V14a1 1 0 0 1 1-1"/></svg></span><span class="bn-lb" data-ru="Базар">Базар</span></button>
+    <button id="tabCash"><span class="bn-ic"><svg class="nv-o" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="5.4" width="18.4" height="13.2" rx="3.2"/><path d="M15.6 12h2.6"/><path d="M2.8 9.4h18.4"/></svg><svg class="nv-f" width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 4h12a4 4 0 0 1 4 4v.6H2V8a4 4 0 0 1 4-4"/><path d="M2 10.4h20V16a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4zm13.6 4.6h2.6a1 1 0 1 0 0-2h-2.6a1 1 0 1 0 0 2"/></svg></span><span class="bn-lb" data-ru="Касса">Касса</span></button>
+    <button id="tabDebt"><span class="bn-ic"><svg class="nv-o" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 16.6 12.9 18.5a1.1 1.1 0 0 0 1.6-1.6"/><path d="m13.9 13.7 2.6 2.6a1.1 1.1 0 0 0 1.6-1.6l-3.9-3.9a2 2 0 0 0-1.7-.6l-3.6.5a2 2 0 0 1-1.6-.5L6.4 8.6"/><path d="m20.8 3.6-3.3 3.3"/><path d="m3.2 8.4 3.9-3.9 2.9 2.9"/></svg><svg class="nv-f" width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7.4 3.8a1 1 0 0 0-1.4 0L2.5 7.3a1 1 0 0 0 0 1.42l3.6 3.6a1 1 0 0 0 1.4 0l1.1-1.1 2.5.35 4.3 4.3-.9.9a1 1 0 0 0 1.4 1.42l4.9-4.9a1 1 0 0 0 0-1.42l-4.6-4.6a1 1 0 0 0-.86-.28l-4.7.66zM11 16.3a1 1 0 1 0-1.4 1.4l1.6 1.6a1 1 0 0 0 1.42-1.4z"/></svg><span class="nv-badge" id="badgeDebt"></span></span><span class="bn-lb" data-ru="Долги">Долги</span></button>
+    <button id="tabMore"><span class="bn-ic"><svg class="nv-o" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.2" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.8" cy="12" r="1.7"/></svg><svg class="nv-f" width="25" height="25" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5.2" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="18.8" cy="12" r="2.1"/></svg></span><span class="bn-lb" data-ru="Ещё">Ещё</span></button>
   </nav>
 
   <div class="panel active" id="panelHome">
@@ -1214,7 +1252,7 @@
       <div class="sec-list" id="secList"></div>
       <div class="sec-add-form">
         <div class="sec-add-row">
-          <input type="text" id="secIcon" class="sec-icon-inp" placeholder="cart" maxlength="12">
+          <input type="text" id="secIcon" class="sec-icon-inp" placeholder="🛒" maxlength="4">
           <input type="text" id="secName" class="sec-name-inp" placeholder="Название раздела">
         </div>
         <div class="sec-colors" id="secColors"></div>
@@ -1469,7 +1507,7 @@
   const KEY='bazar_catalog_v3', QKEY='bazar_qty_v3', HKEY='bazar_hist_v3', SKEY='bazar_sections_v1', PKEY='bazar_plan_v1', RKEY='bazar_revenue_v1', EKEY='bazar_expenses_v1', DKEY='bazar_debts_v1', FKEY='bazar_phone_v1';
   const PALETTE=['#3f8f5b','#8a6d3b','#2f6fb0','#c8541e','#8e44ad','#16a085','#d35400','#c0392b','#2c3e50','#e67e22'];
   // разделы по умолчанию
-  const DEFAULT_SECTIONS=[{name:'Продукты',icon:'cart',color:'#3f8f5b'},{name:'Сигареты',icon:'cigarette',color:'#8a6d3b'},{name:'Напитки',icon:'cup',color:'#2f6fb0'}];
+  const DEFAULT_SECTIONS=[{name:'Продукты',icon:'🛒',color:'#3f8f5b'},{name:'Сигареты',icon:'🚬',color:'#8a6d3b'},{name:'Напитки',icon:'🥤',color:'#2f6fb0'}];
   let sections=[];
   try { sections=JSON.parse(localStorage.getItem(SKEY))||[]; } catch(e){}
   if(!Array.isArray(sections)||sections.length===0) sections=DEFAULT_SECTIONS.map(s=>({...s}));
@@ -1478,9 +1516,11 @@
   function CATS_LIST(){ return sections.map(s=>s.name); }
   function secIcon(key){
     if(!key)return SEC_ICONS.package;
-    if(String(key).indexOf('<svg')===0)return key;
-    const k=String(key).replace(/-/g,'_');
-    return SEC_ICONS[k]||SEC_ICONS.package;
+    const s=String(key);
+    if(s.indexOf('<svg')===0)return s;                    // уже svg
+    const k=s.replace(/-/g,'_');
+    if(SEC_ICONS[k])return SEC_ICONS[k];                  // известный ключ
+    return '<span class="sec-emoji">'+esc(s)+'</span>';   // пользовательский символ (эмодзи)
   }
   function META(cat){ const s=sections.find(x=>x.name===cat); return s?{icon:secIcon(s.icon),color:s.color,raw:s.icon}:{icon:SEC_ICONS.package,color:'#888',raw:'package'}; }
 
@@ -1928,7 +1968,7 @@
           const fb=sections[0]?sections[0].name:'Продукты';
           catalog.forEach(it=>{ if(!it.cat||!sections.find(s=>s.name===it.cat))it.cat=fb; if(!it.priceHist){ it.priceHist=[{p:it.price,d:new Date().toISOString()}]; } });
           qty={}; saveCat(); saveHist(); saveQty();
-          fillCatSelect(); renderBuy(); renderCat(); renderHist(); renderHome&&renderHome();
+          fillCatSelect(); renderBuy(); renderCat(); renderHist(); renderHome&&renderHome(); updateNavBadges&&updateNavBadges();
         });
       }catch(err){ modal('Ошибка','Файл не подходит. Загрузи копию, сохранённую этим приложением.','Ок',null,true); }
       $('bkFile').value='';
@@ -2202,7 +2242,7 @@
   let cashPeriod=1, cashMode='rev';
   function saveRevenue(){ try{localStorage.setItem(RKEY,JSON.stringify(revenue));}catch(e){} cloudSync(); }
   function saveExpenses(){ try{localStorage.setItem(EKEY,JSON.stringify(expenses));}catch(e){} cloudSync(); }
-  function saveDebts(){ try{localStorage.setItem(DKEY,JSON.stringify(debts));}catch(e){} cloudSync(); }
+  function saveDebts(){ try{localStorage.setItem(DKEY,JSON.stringify(debts));}catch(e){} cloudSync(); if(typeof updateNavBadges==='function')updateNavBadges(); }
   function savePhone(){ try{localStorage.setItem(FKEY,JSON.stringify(phone));}catch(e){} cloudSync(); }
   function periodCutoff(months){ if(months<=0)return null; const c=new Date(); c.setMonth(c.getMonth()-months+1); c.setDate(1); c.setHours(0,0,0,0); return c; }
   function renderCash(){
@@ -2514,6 +2554,7 @@
     const inBuy=['Buy','Plan','Cat'].includes(t);
     $('buySeg').style.display=inBuy?'flex':'none';
     if(inBuy)[...$('buySeg').children].forEach(b=>b.classList.toggle('active',b.dataset.bs===t));
+    moveNavPill(); updateNavBadges();
     if(t==='Home')renderHome();
     if(t==='Hist')renderHist();
     if(t==='Mon')renderMon();
@@ -2530,6 +2571,25 @@
   $('moreHist').addEventListener('click',()=>switchTab('Hist'));
   $('moreMon').addEventListener('click',()=>switchTab('Mon'));
 
+
+  // ===== Floating nav: morphing pill + badges =====
+  function moveNavPill(){
+    const nav=$('bottomNav'), pill=$('navPill');
+    if(!nav||!pill)return;
+    const act=nav.querySelector('button.active');
+    if(!act){ pill.style.opacity='0'; return; }
+    const nb=nav.getBoundingClientRect(), ab=act.getBoundingClientRect();
+    pill.style.left=(ab.left-nb.left)+'px';
+    pill.style.width=ab.width+'px';
+    pill.style.opacity='1';
+  }
+  function updateNavBadges(){
+    const b=$('badgeDebt'); if(!b)return;
+    const n=debts.filter(d=>!d.done).length;
+    if(n>0){ b.textContent=n>99?'99+':n; b.classList.add('show'); }
+    else { b.textContent=''; b.classList.remove('show'); }
+  }
+  window.addEventListener('resize',moveNavPill);
   // ===== Главная: дашборд =====
   function renderHome(){
     // приветствие
@@ -2626,7 +2686,7 @@
   $('secModalBg').addEventListener('click',e=>{ if(e.target===$('secModalBg'))$('secModalBg').classList.remove('show'); });
 
   $('secAddBtn').addEventListener('click',()=>{
-    const name=$('secName').value.trim(), icon=$('secIcon').value.trim()||'package';
+    const name=$('secName').value.trim(), icon=$('secIcon').value.trim()||'📦';
     if(!name){ $('secName').focus(); return; }
     if(sections.find(s=>s.name.toLowerCase()===name.toLowerCase())){ $('secName').focus(); return; }
     sections.push({name,icon,color:pickedColor});
@@ -2817,6 +2877,7 @@
   $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist(); renderHome();
   applyLang();
+  requestAnimationFrame(()=>{ moveNavPill(); updateNavBadges(); });
 
   // проверка сессии при старте
   (async function(){
