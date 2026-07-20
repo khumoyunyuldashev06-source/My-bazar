@@ -210,13 +210,13 @@
   .hist-total .sub { font-size:13px; color:#b8ab98; margin-top:4px; font-weight:500; }
   .donut-area { display:flex; align-items:center; gap:18px; margin-top:16px; }
   .donut { width:96px; height:96px; flex-shrink:0; border-radius:50%; position:relative; }
-  .donut::after { content:""; position:absolute; inset:16px; background:#312922; border-radius:50%; }
+  .donut::after { content:""; position:absolute; inset:16px; background:var(--card); border-radius:50%; }
   .donut-legend { flex:1; display:flex; flex-direction:column; gap:9px; }
   .leg-row { display:flex; align-items:center; gap:8px; font-size:13px; }
   .leg-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-  .leg-name { color:#d8cfc0; font-weight:600; }
-  .leg-val { margin-left:auto; font-weight:800; color:#fff; }
-  .leg-pct { color:#b8ab98; font-weight:600; font-size:12px; margin-left:6px; }
+  .leg-name { color:var(--ink); font-weight:600; }
+  .leg-val { margin-left:auto; font-weight:800; color:var(--ink); }
+  .leg-pct { color:var(--muted); font-weight:600; font-size:12px; margin-left:6px; }
   .analytics { background:var(--card); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:var(--shadow); }
   .analytics h4 { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:14px; }
   .bar-row { margin-bottom:13px; }
@@ -684,9 +684,9 @@
   /* --- Тёмная тема: инлайновые тёмные карты кассы --- */
   html[data-theme="dark"] .cash-card[style] { background:var(--card) !important; }
   /* --- Главная (dashboard) --- */
-  .home-greet { display:flex; align-items:baseline; justify-content:space-between; margin:2px 2px 14px; }
-  .home-hi { font-size:26px; font-weight:800; letter-spacing:-0.035em; }
-  .home-date { font-size:13px; color:var(--muted); font-weight:600; }
+  .home-greet { margin:2px 2px 16px; }
+  .home-date { font-size:28px; font-weight:800; letter-spacing:-0.035em; color:var(--ink); line-height:1.15; }
+  .home-hi { font-size:14.5px; color:var(--muted); font-weight:600; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .home-hero { margin-bottom:14px; cursor:pointer; }
   .home-hero .total-value { font-size:42px; }
   .home-hero-sub { display:flex; gap:14px; margin-top:10px; font-size:13px; font-weight:700; color:rgba(255,255,255,.85); flex-wrap:wrap; }
@@ -721,6 +721,45 @@
   .more-row:active { background:var(--bg2); }
   .mr-ic { font-size:19px; width:26px; text-align:center; }
   .mr-arr { margin-left:auto; color:var(--muted); font-size:19px; font-weight:600; }
+  /* --- Монитор и История: белые карты вместо тёмных --- */
+  .mon-period-card, .mon-period-card.mon-exp, .hist-total {
+    background:var(--card) !important; color:var(--ink) !important;
+    border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--shadow-2);
+    padding:22px 22px 20px; margin-bottom:14px;
+  }
+  .mon-pl, .hist-total .l { color:var(--muted) !important; font-size:11px; letter-spacing:.14em; font-weight:700; text-transform:uppercase; }
+  .mon-pv, .hist-total .v { color:var(--ink) !important; font-size:40px; font-weight:800; letter-spacing:-0.04em; margin-top:5px; }
+  .mon-pv span { color:var(--muted) !important; font-size:19px; }
+  .mon-ps, .hist-total .sub { color:var(--muted) !important; font-size:13.5px; margin-top:6px; font-weight:600; }
+  /* легенда/кольцо внутри тёмной карты истории */
+  .hist-total .hl-name, .hist-total .hl-val, .hist-total .hl-pct { color:var(--ink) !important; }
+  html[data-theme="dark"] .mon-period-card, html[data-theme="dark"] .hist-total { background:var(--card) !important; }
+  /* --- Степпер в Плане --- */
+  .plan-stepper { flex-shrink:0; }
+  .plan-stepper button { width:32px; height:32px; font-size:19px; }
+  .plan-stepper input { width:42px; font-size:15px; padding:7px 2px; }
+  .plan-sum-in { font-size:13.5px; font-weight:800; color:var(--accent); margin-top:3px; font-variant-numeric:tabular-nums; }
+  .plan-item .plan-del { margin-left:4px; }
+  /* --- Калькулятор: плавающая кнопка + шторка --- */
+  .calc-fab { position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); width:54px; height:54px; border-radius:50%; border:none; background:var(--grad); color:#fff; font-size:23px; cursor:pointer; z-index:60; box-shadow:0 8px 20px rgba(255,77,13,.4), 0 16px 40px rgba(14,14,16,.18); transition:transform .18s var(--ease); }
+  .calc-fab:active { transform:scale(.9); }
+  .calc-sheet { position:fixed; inset:0; z-index:95; background:rgba(14,14,16,.4); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:none; align-items:flex-end; justify-content:center; }
+  .calc-sheet.show { display:flex; animation:fadeIn .2s var(--ease); }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes sheetUp { from{transform:translateY(100%)} to{transform:none} }
+  .calc-panel { width:100%; max-width:520px; background:var(--card); border-radius:28px 28px 0 0; padding:10px 16px calc(20px + env(safe-area-inset-bottom)); box-shadow:var(--shadow-3); animation:sheetUp .3s var(--ease); }
+  .calc-grip { width:38px; height:5px; border-radius:3px; background:var(--line); margin:0 auto 12px; }
+  .calc-screen { text-align:right; padding:8px 8px 16px; }
+  .calc-expr { font-size:15px; color:var(--muted); font-weight:600; min-height:20px; font-variant-numeric:tabular-nums; word-break:break-all; }
+  .calc-out { font-size:42px; font-weight:800; letter-spacing:-0.035em; color:var(--ink); font-variant-numeric:tabular-nums; margin-top:4px; word-break:break-all; }
+  .calc-keys { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+  .calc-keys button { height:60px; border:none; border-radius:18px; background:var(--bg2); color:var(--ink); font-size:23px; font-weight:700; cursor:pointer; font-family:inherit; transition:transform .1s var(--ease), filter .15s; }
+  .calc-keys button:active { transform:scale(.93); filter:brightness(.94); }
+  .calc-keys .ck-op { background:var(--soft); color:var(--accent); font-weight:800; }
+  .calc-keys .ck-fn { background:var(--bg2); color:var(--muted); font-size:19px; }
+  .calc-keys .ck-eq { background:var(--grad); color:#fff; box-shadow:0 4px 12px rgba(255,77,13,.3); }
+  html[data-theme="dark"] .calc-keys button { background:#2a2a2c; }
+  html[data-theme="dark"] .calc-keys .ck-op { background:var(--soft); }
 </style>
 </head>
 <body>
@@ -762,8 +801,8 @@
 
   <div class="panel active" id="panelHome">
     <div class="home-greet">
-      <div class="home-hi" id="homeHi">Салом! 👋</div>
       <div class="home-date" id="homeDate"></div>
+      <div class="home-hi" id="homeHi">Салом! 👋</div>
     </div>
     <div class="total-card home-hero" id="homeHeroCard">
       <div class="total-label" data-ru="Прибыль за месяц">Прибыль за месяц</div>
@@ -1063,6 +1102,32 @@
       <div class="modal-btns" style="margin-top:16px">
         <button class="mb-cancel" id="payCancel" data-ru="Отмена">Отмена</button>
         <button class="mb-ok" id="payOk" style="background:var(--accent)" data-ru="Оплатить">Оплатить</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-fab" id="calcFab" title="Калькулятор">🧮</button>
+
+  <div class="calc-sheet" id="calcSheet">
+    <div class="calc-panel">
+      <div class="calc-grip"></div>
+      <div class="calc-screen">
+        <div class="calc-expr" id="calcExpr"></div>
+        <div class="calc-out" id="calcOut">0</div>
+      </div>
+      <div class="calc-keys" id="calcKeys">
+        <button data-k="C" class="ck-fn">C</button>
+        <button data-k="back" class="ck-fn">←</button>
+        <button data-k="%" class="ck-fn">%</button>
+        <button data-k="/" class="ck-op">÷</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="*" class="ck-op">×</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="-" class="ck-op">−</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="+" class="ck-op">+</button>
+        <button data-k="000">000</button><button data-k="0">0</button><button data-k=".">,</button>
+        <button data-k="=" class="ck-eq">=</button>
       </div>
     </div>
   </div>
@@ -1990,8 +2055,13 @@
         const it=catalog.find(c=>c.id===x.p.id);
         return `<div class="plan-item"><span class="plan-ic">${m.icon}</span>
           <div class="plan-info"><div class="plan-name">${esc(it.name)}</div>
-          <div class="plan-meta">${fmt(it.price)} × ${x.p.qty} ${esc(it.unit||'шт')}</div></div>
-          <span class="plan-sum">${fmt(it.price*x.p.qty)}</span>
+          <div class="plan-meta">${fmt(it.price)} × ${x.p.qty} ${esc(it.unit||'шт')}</div>
+          <div class="plan-sum-in">${fmt(it.price*x.p.qty)} сум</div></div>
+          <div class="stepper plan-stepper">
+            <button data-pact="minus" data-pi="${x.i}">−</button>
+            <input type="number" inputmode="decimal" data-pqty="${x.i}" value="${x.p.qty}">
+            <button data-pact="plus" data-pi="${x.i}">+</button>
+          </div>
           <button class="plan-del" data-pdel="${x.i}">×</button></div>`;
       }).join('');
       html+='</div>';
@@ -2034,8 +2104,27 @@
   $('planNoteInput').addEventListener('keydown',e=>{ if(e.key==='Enter')addNote(); });
   // удалить пункт
   $('planList').addEventListener('click',e=>{
+    const st=e.target.closest('[data-pact]');
+    if(st){
+      const i=+st.dataset.pi, p=plan[i]; if(!p||p.type!=='cat')return;
+      p.qty=Math.max(0,(p.qty||0)+(st.dataset.pact==='plus'?1:-1));
+      if(p.qty<=0)plan.splice(i,1);
+      savePlan(); renderPlan(); return;
+    }
     const d=e.target.closest('[data-pdel]'); if(!d)return;
     plan.splice(+d.dataset.pdel,1); savePlan(); renderPlan();
+  });
+  $('planList').addEventListener('input',e=>{
+    const inp=e.target.closest('[data-pqty]'); if(!inp)return;
+    const i=+inp.dataset.pqty, p=plan[i]; if(!p||p.type!=='cat')return;
+    const v=parseFloat(inp.value);
+    p.qty=isNaN(v)||v<0?0:v;
+    savePlan();
+    // обновляем только суммы, не перерисовываем (чтобы не сбить фокус)
+    const it=catalog.find(c=>c.id===p.id);
+    const box=inp.closest('.plan-item');
+    if(it&&box){ const s=box.querySelector('.plan-sum-in'); if(s)s.textContent=fmt(it.price*p.qty)+' сум'; }
+    if($('planTotal'))$('planTotal').textContent=planSum()>0?fmt(planSum())+' сум':'—';
   });
   // перенести в базар
   $('planToBuyBtn').addEventListener('click',()=>{
@@ -2402,8 +2491,9 @@
   function renderHome(){
     // приветствие
     const name=cloudUserId.startsWith('usr_')?cloudUserId.slice(4):'';
-    $('homeHi').textContent=(getLang()==='uz'?'Салом':'Салом')+(name?', '+name:'')+'! 👋';
-    $('homeDate').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+    $('homeHi').textContent='Салом'+(name?', '+name:'')+'! 👋';
+    const nd=new Date();
+    $('homeDate').textContent=nd.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})+', '+nd.toLocaleDateString('ru-RU',{weekday:'long'});
     // прибыль месяца = выручка − закупка − расходы (+ телефон отдельно в виджете)
     const cut=(()=>{ const c=new Date(); c.setDate(1); c.setHours(0,0,0,0); return c; })();
     const inM=d=>new Date(d)>=cut;
@@ -2635,6 +2725,48 @@
     if(!cloudTgId){ $('authErr').textContent='Открой приложение через Telegram'; return; }
     $('authTgBtn').textContent='Вхожу...';
     await applyLogin(cloudTgId);
+  });
+
+  // ===== Калькулятор =====
+  let calcExpr='';
+  function calcFmtNum(n){
+    if(!isFinite(n))return '∞';
+    const s=Math.round(n*100)/100;
+    const parts=String(s).split('.');
+    return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(parts[1]?','+parts[1]:'');
+  }
+  function calcEval(){
+    if(!calcExpr)return null;
+    try{
+      let e=calcExpr.replace(/[^0-9+\-*/.%]/g,'');
+      if(/[+\-*/.]$/.test(e))e=e.slice(0,-1);
+      if(!e)return null;
+      e=e.replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');
+      const r=Function('"use strict";return('+e+')')();
+      return (typeof r==='number'&&isFinite(r))?r:null;
+    }catch(err){ return null; }
+  }
+  function calcRender(){
+    const disp=calcExpr.replace(/\*/g,'×').replace(/\//g,'÷').replace(/\./g,',');
+    $('calcExpr').textContent=disp||'';
+    const r=calcEval();
+    $('calcOut').textContent=r===null?(calcExpr?'…':'0'):calcFmtNum(r);
+  }
+  $('calcFab').addEventListener('click',()=>{ $('calcSheet').classList.add('show'); calcRender(); });
+  $('calcSheet').addEventListener('click',e=>{ if(e.target===$('calcSheet'))$('calcSheet').classList.remove('show'); });
+  $('calcKeys').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-k]'); if(!b)return;
+    const k=b.dataset.k;
+    if(k==='C')calcExpr='';
+    else if(k==='back')calcExpr=calcExpr.slice(0,-1);
+    else if(k==='='){ const r=calcEval(); if(r!==null)calcExpr=String(Math.round(r*100)/100); }
+    else if('+-*/'.includes(k)){
+      if(!calcExpr&&k!=='-')return;
+      if(/[+\-*/]$/.test(calcExpr))calcExpr=calcExpr.slice(0,-1);
+      calcExpr+=k;
+    }
+    else calcExpr+=k;
+    calcRender();
   });
 
   fillCatSelect();
