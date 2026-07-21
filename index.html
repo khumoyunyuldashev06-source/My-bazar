@@ -683,11 +683,9 @@
 
   /* --- Сегменты Базара --- */
   .sub-seg { display:flex; gap:4px; border-radius:15px; padding:4px; margin:0 0 14px;
-    position:sticky; top:calc(6px + env(safe-area-inset-top)); z-index:40;
-    background:color-mix(in srgb, var(--bg2) 88%, transparent);
-    backdrop-filter:blur(22px) saturate(1.6); -webkit-backdrop-filter:blur(22px) saturate(1.6);
-    box-shadow:0 4px 16px rgba(14,14,16,.06); }
-  html[data-theme="dark"] .sub-seg { background:rgba(33,29,24,.88); box-shadow:0 4px 16px rgba(0,0,0,.4); }
+    position:relative; z-index:1;
+    background:var(--bg2); }
+  html[data-theme="dark"] .sub-seg { background:var(--bg2); }
   .sub-seg button { flex:1; background:transparent; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:10px; border-radius:11px; cursor:pointer; font-family:inherit; transition:.15s; }
   .sub-seg button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow-1); }
 
@@ -825,6 +823,17 @@
   .nv-badge.show{ display:flex; animation:badgePop .4s cubic-bezier(.34,1.56,.64,1); }
   @keyframes badgePop{ from{transform:scale(0)} to{transform:scale(1)} }
   @media (min-width:700px){ .bottom-nav{ max-width:460px; bottom:calc(20px + env(safe-area-inset-bottom)); } }
+  .plan-cat-copy { margin-left:auto; background:var(--bg2); border:none; width:30px; height:30px; border-radius:9px; color:var(--accent); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform .12s var(--ease); }
+  .plan-cat-copy:active { transform:scale(.85); }
+  .plan-cat-copy.copied { background:var(--green); color:#fff; }
+  /* --- Plata-стиль градиентное кольцо расходов --- */
+  .plata-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:12px 0 8px; }
+  .plata-ring { position:relative; width:210px; height:210px; }
+  .plata-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+  .plata-ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .prc-val { font-size:26px; font-weight:800; letter-spacing:-0.03em; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .prc-lbl { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
+  .plata-pct { position:absolute; font-size:13px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -920,7 +929,7 @@
   <header>
     <div class="title-row">
       <div class="basket"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
-      <div style="flex:1"><h1>My Business</h1><span class="date" id="today"></span></div>
+      <div style="flex:1"><h1>My Business</h1></div>
       <div class="sync-badge" id="syncBadge" title="Синхронизация"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6.5 19z"/></svg></div>
     </div>
   </header>
@@ -1080,6 +1089,7 @@
     </div>
     <div class="analytics">
       <h4><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="14" r="5"/><circle cx="17" cy="8" r="3"/><circle cx="17.5" cy="16.5" r="2"/></svg><span>Расходы по разделам</span></h4>
+      <div class="plata-ring-wrap" id="plataRing"></div>
       <div class="bubble-area" id="bubbleArea"></div>
       <div id="bubbleLegend"></div>
     </div>
@@ -2176,9 +2186,32 @@
     if(catGrand<=0){
       $('bubbleArea').innerHTML='<div class="empty" style="padding:20px">Нет данных за период</div>';
       $('bubbleLegend').innerHTML='';
+      if($('plataRing'))$('plataRing').innerHTML='';
       return;
     }
     const maxCat=Math.max(...present.map(c=>byCat[c]));
+    // --- Plata-кольцо: SVG сегменты + проценты вокруг ---
+    const R=90, C=2*Math.PI*R, cx=105, cy=105;
+    let off=0, ringSegs='', ringPcts='';
+    present.forEach(cat=>{
+      const v=byCat[cat], m=META(cat);
+      const frac=v/catGrand;
+      const len=frac*C;
+      ringSegs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${m.color}" stroke-width="26" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" stroke-linecap="butt"/>`;
+      // процент по центру сегмента
+      const mid=off+len/2;
+      const ang=(mid/C)*2*Math.PI - Math.PI/2;
+      const pr=R+26;
+      const px=cx+Math.cos(ang)*pr, py=cy+Math.sin(ang)*pr;
+      const pct=Math.round(frac*100);
+      if(pct>=4)ringPcts+=`<div class="plata-pct" style="left:${px}px;top:${py}px;transform:translate(-50%,-50%)">${pct}%</div>`;
+      off+=len;
+    });
+    $('plataRing').innerHTML=`<div class="plata-ring">
+      <svg viewBox="0 0 210 210">${ringSegs}</svg>
+      <div class="plata-ring-center"><div class="prc-val">${fmt(catGrand)}</div><div class="prc-lbl">сум всего</div></div>
+      ${ringPcts}
+    </div>`;
     let bubbles='', legend='';
     present.forEach(cat=>{
       const v=byCat[cat], m=META(cat);
@@ -2189,7 +2222,7 @@
         <span class="bub-name">${m.icon} ${cat}<span class="bub-pct">${pct}%</span></span>
         <span class="bub-val">${fmt(v)} сум</span></div>`;
     });
-    $('bubbleArea').innerHTML=bubbles;
+    $('bubbleArea').innerHTML='';
     $('bubbleLegend').innerHTML=legend;
     renderMonAnalytics();
   }
@@ -2358,7 +2391,7 @@
       if(!inCat.length)return;
       const m=META(cat);
       const catSum=inCat.reduce((s,x)=>{ const it=catalog.find(c=>c.id===x.p.id); return s+(it?it.price*x.p.qty:0); },0);
-      html+=`<div class="plan-day-sep" style="display:flex;align-items:center;gap:7px"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:${m.color}"></span>${m.icon} ${cat} · ${fmt(catSum)} сум</div><div class="list">`;
+      html+=`<div class="plan-day-sep" style="display:flex;align-items:center;gap:7px"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:${m.color}"></span>${m.icon} ${cat} · ${fmt(catSum)} сум<button class="plan-cat-copy" data-catcopy="${esc(cat)}" title="Скопировать раздел"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div><div class="list">`;
       html+=inCat.map(x=>{
         const it=catalog.find(c=>c.id===x.p.id);
         return `<div class="plan-item"><span class="plan-ic">${m.icon}</span>
@@ -2412,6 +2445,14 @@
   $('planNoteInput').addEventListener('keydown',e=>{ if(e.key==='Enter')addNote(); });
   // удалить пункт
   $('planList').addEventListener('click',e=>{
+    const cc=e.target.closest('[data-catcopy]');
+    if(cc){
+      const txt=planTextFor(cc.dataset.catcopy); if(!txt)return;
+      navigator.clipboard.writeText(txt).then(()=>{
+        cc.classList.add('copied'); setTimeout(()=>cc.classList.remove('copied'),1200);
+      });
+      return;
+    }
     const st=e.target.closest('[data-pact]');
     if(st){
       const i=+st.dataset.pi, p=plan[i]; if(!p||p.type!=='cat')return;
@@ -2452,27 +2493,32 @@
     if(plan.length) modal('Очистить план?','Весь список плана будет удалён.','Очистить',()=>{ plan=[]; savePlan(); renderPlan(); });
   });
   // копировать план для продавца
-  $('planCopyBtn').addEventListener('click',()=>{
+  function planTextFor(onlyCat){
     let out=[]; let total=0;
-    // товары по разделам
-    CATS_LIST().forEach(cat=>{
+    const cats=onlyCat?[onlyCat]:CATS_LIST();
+    cats.forEach(cat=>{
       const items=plan.filter(p=>p.type==='cat').map(p=>({p,it:catalog.find(c=>c.id===p.id)})).filter(x=>x.it&&x.it.cat===cat);
       if(!items.length)return;
       const m=sections.find(s=>s.name===cat);
       const emo=(m&&m.icon&&String(m.icon).indexOf('<')!==0)?m.icon+' ':'';
       out.push(`${emo}${cat.toUpperCase()}`);
       items.forEach(({p,it})=>{
-        const s=it.price*p.qty; total+=s;
-        out.push(`${it.name} — ${p.qty} (${fmt(s)})`);
+        total+=it.price*p.qty;
+        out.push(`${it.name} — ${p.qty}×${fmt(it.price)} сум`);
       });
       out.push('');
     });
-    // заметки
-    const notes=plan.filter(p=>p.type==='note');
-    if(notes.length){ out.push('📌 ЗАМЕТКИ'); notes.forEach(n=>out.push(`• ${n.text}`)); out.push(''); }
-    if(!out.length)return;
+    // заметки только в полном списке
+    if(!onlyCat){
+      const notes=plan.filter(p=>p.type==='note');
+      if(notes.length){ out.push('📌 ЗАМЕТКИ'); notes.forEach(n=>out.push(`• ${n.text}`)); out.push(''); }
+    }
+    if(!out.length)return null;
     out.push(`ИТОГО: ${fmt(total)} сум`);
-    const txt=out.join('\n').replace(/\n\n+/g,'\n\n').trim();
+    return out.join('\n').replace(/\n\n+/g,'\n\n').trim();
+  }
+  $('planCopyBtn').addEventListener('click',()=>{
+    const txt=planTextFor(null); if(!txt)return;
     navigator.clipboard.writeText(txt).then(()=>{
       const sp=$('planCopyBtn').querySelector('span'); const old=sp.textContent;
       sp.textContent='Скопировано ✓'; setTimeout(()=>sp.textContent=old,1800);
@@ -3176,7 +3222,6 @@
   });
 
   fillCatSelect();
-  $('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
   renderBuy(); renderCat(); renderHist(); renderHome();
   applyLang();
   requestAnimationFrame(()=>{ moveNavPill(); updateNavBadges(); });
