@@ -824,6 +824,18 @@
   @keyframes badgePop{ from{transform:scale(0)} to{transform:scale(1)} }
   @media (min-width:700px){ .bottom-nav{ max-width:460px; bottom:calc(20px + env(safe-area-inset-bottom)); } }
   /* --- SVG icon system --- */
+  /* скелетон-загрузка */
+  @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+  .skel { background:linear-gradient(90deg, var(--bg2) 25%, var(--line) 50%, var(--bg2) 75%); background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite; border-radius:8px; }
+  .skel-card { background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:18px; margin-bottom:12px; }
+  .skel-line { height:14px; margin-bottom:10px; }
+  /* pull-to-refresh */
+  .ptr { position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:35; display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:var(--card); box-shadow:var(--shadow-2); opacity:0; pointer-events:none; margin-top:8px; }
+  .ptr svg { color:var(--accent); transition:transform .1s linear; }
+  .ptr.spin svg { animation:ptrSpin .7s linear infinite; }
+  @keyframes ptrSpin { to { transform:rotate(360deg); } }
+  .excel-btn { width:100%; margin-top:10px; background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:14px; font-size:14.5px; font-weight:700; color:var(--green); cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform .13s var(--ease); }
+  .excel-btn:active { transform:scale(.98); }
   .ic { display:inline-block; vertical-align:-0.18em; flex-shrink:0; }
   .hw-ic, .qa-ic, .mr-ic, .hr-ic, .basket, .acc-avatar, .auth-logo,
   .calc-fab, .calc-x, .sync-badge, .search-ic, .pen, .plan-ic, .exp-ic,
@@ -870,9 +882,19 @@
   .fc-v { font-size:15px; font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; letter-spacing:-0.02em; }
   .fc-v.pos { color:var(--green); } .fc-v.neg { color:var(--red); }
   .fc-warn { font-size:11.5px; color:var(--muted); margin-top:12px; font-style:italic; }
+  /* --- Pull to refresh --- */
+  .ptr { position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:80;
+    width:40px; height:40px; border-radius:50%; background:var(--card); box-shadow:var(--shadow-2);
+    display:flex; align-items:center; justify-content:center; color:var(--accent);
+    margin-top:-50px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .ptr.pull { transition:none; }
+  .ptr.spin { opacity:1; margin-top:calc(12px + env(safe-area-inset-top)); }
+  .ptr.spin .ptr-spin { animation:ptrSpin .7s linear infinite; }
+  @keyframes ptrSpin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
+  <div class="ptr" id="ptr"><svg class="ptr-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg></div>
   <div class="auth-screen" id="authScreen">
     <div class="auth-box">
       <div class="auth-logo"><svg class="ic" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
@@ -1028,7 +1050,9 @@
       <button class="bk-load" id="bkLoadBtn"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V9"/><path d="m7 13 5-5 5 5"/><path d="M4 4h16"/></svg><span>Загрузить копию</span></button>
     </div>
     <input type="file" id="bkFile" accept="application/json,.json" style="display:none">
+    <button class="excel-btn" id="excelBtn"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="m9 13 2 3 2-3M9 16h4"/></svg><span data-ru="Выгрузить в Excel (CSV)">Выгрузить в Excel (CSV)</span></button>
     <div id="analyticsWrap"></div>
+    <div class="search-box" style="margin-bottom:14px"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="histSearch" placeholder="Поиск товара в базарах..." data-ru="Поиск товара в базарах..."></div>
     <div class="list" id="histList"></div>
   </div>
 
@@ -1230,6 +1254,8 @@
       </div>
     </div>
   </div>
+
+  <div class="ptr" id="ptr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-5h5"/></svg></div>
 
   <button class="calc-fab" id="calcFab" title="Калькулятор"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h4"/></svg></button>
 
@@ -1623,16 +1649,17 @@
     if(it.priceHist.length>30)it.priceHist=it.priceHist.slice(-30);
   }
 
-  function modal(title,text,okLabel,fn,hideCancel){
+  let pendingCancel=null;
+  function modal(title,text,okLabel,fn,hideCancel,onCancel){
     $('modalTitle').textContent=title; $('modalText').textContent=text;
     $('modalOk').textContent=okLabel||'Удалить'; $('modalOk').style.display=''; $('modalCancel').textContent='Отмена';
-    pendingAction=fn;
+    pendingAction=fn; pendingCancel=onCancel||null;
     $('modalCancel').style.display=hideCancel?'none':''; $('modalBg').classList.add('show');
   }
-  function closeModal(){ $('modalBg').classList.remove('show'); pendingAction=null; $('modalCancel').style.display=''; $('modalOk').style.display=''; $('modalCancel').textContent='Отмена'; }
+  function closeModal(){ $('modalBg').classList.remove('show'); if(pendingCancel){pendingCancel();pendingCancel=null;} pendingAction=null; $('modalCancel').style.display=''; $('modalOk').style.display=''; $('modalCancel').textContent='Отмена'; }
   $('modalCancel').addEventListener('click',closeModal);
   $('modalBg').addEventListener('click',e=>{ if(e.target===$('modalBg'))closeModal(); });
-  $('modalOk').addEventListener('click',()=>{ if(pendingAction)pendingAction(); closeModal(); });
+  $('modalOk').addEventListener('click',()=>{ pendingCancel=null; if(pendingAction)pendingAction(); $('modalBg').classList.remove('show'); pendingAction=null; $('modalCancel').style.display=''; $('modalOk').style.display=''; $('modalCancel').textContent='Отмена'; });
 
   function renderCompare(){
     const wrap=$('compareWrap'); const t=total();
@@ -1811,7 +1838,11 @@
     renderDonut(); renderAnalytics();
     if(!hist.length){ list.innerHTML='<div class="empty">Пока нет сохранённых базаров.<br>Собери закупку и нажми «Сохранить базар».</div>'; return; }
     const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-    list.innerHTML=hist.slice().reverse().map(h=>{
+    const hq=($('histSearch')?$('histSearch').value:'').trim().toLowerCase();
+    let histShown=hist.slice().reverse();
+    if(hq)histShown=histShown.filter(h=>(h.items||[]).some(it=>it.name.toLowerCase().includes(hq)));
+    if(!histShown.length){ list.innerHTML='<div class="empty">Ничего не найдено.<br>Другое название товара?</div>'; return; }
+    list.innerHTML=histShown.map(h=>{
       const d=new Date(h.date);
       // детализация товаров по разделам
       let detail='';
@@ -2012,6 +2043,37 @@
     setTimeout(()=>$('bkSaveBtn').textContent='Сохранить копию',1800);
   });
   $('bkLoadBtn').addEventListener('click',()=>$('bkFile').click());
+  // экспорт в Excel (CSV с разделителем ; и BOM для кириллицы)
+  $('excelBtn').addEventListener('click',()=>{
+    const rows=[['Тип','Дата','Название','Кол-во','Цена','Сумма','Заметка']];
+    const MON=['01','02','03','04','05','06','07','08','09','10','11','12'];
+    const d2=d=>{ const x=new Date(d); return `${String(x.getDate()).padStart(2,'0')}.${MON[x.getMonth()]}.${x.getFullYear()}`; };
+    // история базаров (по товарам)
+    hist.slice().sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(h=>{
+      (h.items||[]).forEach(it=>rows.push(['Закупка',d2(h.date),it.name,it.qty,it.price,it.price*it.qty,'']));
+    });
+    // выручка
+    revenue.forEach(r=>rows.push(['Выручка',d2(r.date),'','','',r.amount,'']));
+    // расходы
+    expenses.forEach(x=>rows.push(['Расход',d2(x.date),'','','',x.amount,x.note||'']));
+    // телефон
+    phone.forEach(p=>rows.push(['Телефон',d2(p.date),'','','',p.amount,p.note||'']));
+    // долги
+    debts.forEach(dd=>rows.push([dd.type==='owe'?'Я должен':'Мне должны',d2(dd.date),dd.who||'','','',dd.amount,dd.note||'']));
+    const csv='\ufeff'+rows.map(r=>r.map(c=>{
+      const s=String(c).replace(/"/g,'""');
+      return /[";\n]/.test(s)?`"${s}"`:s;
+    }).join(';')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const now=new Date();
+    a.href=url; a.download=`my-business-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const b=$('excelBtn'); const old=b.querySelector('span').textContent;
+    b.querySelector('span').textContent='Готово ✓'; setTimeout(()=>b.querySelector('span').textContent=old,1800);
+  });
   $('bkFile').addEventListener('change',e=>{
     const file=e.target.files[0]; if(!file)return;
     const reader=new FileReader();
@@ -2654,6 +2716,7 @@
     renderDebt();
   });
   $('debtSearch').addEventListener('input',()=>renderDebt());
+  $('histSearch').addEventListener('input',()=>renderHist());
   $('debtList').addEventListener('click',e=>{
     const dp=e.target.closest('[data-dpay]');
     const dn=e.target.closest('[data-ddone]'); const dl=e.target.closest('[data-ddel]');
@@ -2740,6 +2803,41 @@
   $('moreHist').addEventListener('click',()=>switchTab('Hist'));
   $('moreMon').addEventListener('click',()=>switchTab('Mon'));
 
+
+  // ===== Pull-to-refresh =====
+  (function(){
+    let startY=0, pulling=false, dist=0;
+    const TH=70;
+    const ptr=()=>document.getElementById('ptr');
+    document.addEventListener('touchstart',e=>{
+      if(window.scrollY>4)return;
+      if(document.querySelector('.calc-sheet.show, .phone-screen.show, .auth-screen:not(.hidden)'))return;
+      startY=e.touches[0].clientY; pulling=true; dist=0;
+    },{passive:true});
+    document.addEventListener('touchmove',e=>{
+      if(!pulling)return;
+      dist=e.touches[0].clientY-startY;
+      if(dist<=0){ pulling=false; const p=ptr(); if(p){p.style.opacity='0';p.style.transform='translateX(-50%) translateY(0)';} return; }
+      const p=ptr(); if(!p)return;
+      const pull=Math.min(dist*.5,90);
+      p.style.opacity=Math.min(dist/TH,1);
+      p.style.transform=`translateX(-50%) translateY(${pull}px)`;
+      p.querySelector('svg').style.transform=`rotate(${dist*2}deg)`;
+    },{passive:true});
+    document.addEventListener('touchend',async()=>{
+      if(!pulling)return; pulling=false;
+      const p=ptr(); if(!p)return;
+      if(dist>=TH){
+        p.style.opacity='1'; p.style.transform='translateX(-50%) translateY(50px)'; p.classList.add('spin');
+        try{ await cloudLoad(); }catch(e){}
+        renderHome&&renderHome();
+        setTimeout(()=>{ p.classList.remove('spin'); p.style.opacity='0'; p.style.transform='translateX(-50%) translateY(0)'; },400);
+      } else {
+        p.style.opacity='0'; p.style.transform='translateX(-50%) translateY(0)';
+      }
+      dist=0;
+    },{passive:true});
+  })();
 
   // ===== Floating nav: morphing pill + badges =====
   function moveNavPill(){
@@ -3072,6 +3170,11 @@
   // проверка сессии при старте
   (async function(){
     const saved=localStorage.getItem('bazar_session');
+    // скелетон в ленте, пока грузятся данные
+    const hr=$('homeRecent');
+    if(hr && (saved||cloudTgId)){
+      hr.innerHTML=Array(4).fill('<div class="skel-card" style="display:flex;align-items:center;gap:12px;padding:14px"><div class="skel" style="width:38px;height:38px;border-radius:12px"></div><div style="flex:1"><div class="skel skel-line" style="width:45%;margin-bottom:7px"></div><div class="skel skel-line" style="width:28%;height:11px;margin-bottom:0"></div></div><div class="skel skel-line" style="width:74px;height:16px;margin-bottom:0"></div></div>').join('');
+    }
     if(saved){
       cloudUserId=saved;
       $('authScreen').classList.add('hidden');
