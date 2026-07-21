@@ -827,13 +827,25 @@
   .plan-cat-copy:active { transform:scale(.85); }
   .plan-cat-copy.copied { background:var(--green); color:#fff; }
   /* --- Plata-стиль градиентное кольцо расходов --- */
-  .plata-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:12px 0 8px; }
-  .plata-ring { position:relative; width:210px; height:210px; }
-  .plata-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
-  .plata-ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-  .prc-val { font-size:26px; font-weight:800; letter-spacing:-0.03em; color:var(--ink); font-variant-numeric:tabular-nums; }
-  .prc-lbl { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
-  .plata-pct { position:absolute; font-size:13px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .plata-ring-wrap { display:flex; flex-direction:column; align-items:center; padding:18px 0 12px; }
+  .plata-ring { position:relative; width:230px; height:230px; }
+  .plata-orb { position:absolute; inset:26px; border-radius:50%;
+    background:
+      radial-gradient(circle at 30% 30%, #4a3dff 0%, transparent 55%),
+      radial-gradient(circle at 74% 28%, #ff4d3d 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, #ff2d9c 0%, transparent 52%),
+      radial-gradient(circle at 32% 78%, #b64dff 0%, transparent 55%),
+      radial-gradient(circle at 58% 52%, #ff8a2a 0%, transparent 62%),
+      linear-gradient(135deg,#5b5bef,#ff3d6e);
+    filter:saturate(1.3);
+    box-shadow:0 14px 44px rgba(120,60,255,.30), inset 0 0 44px rgba(255,255,255,.14);
+  }
+  .plata-orb::after { content:""; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 40% 36%, rgba(255,255,255,.4), transparent 42%); }
+  .plata-ring svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); pointer-events:none; }
+  .prc-lbl { display:none; }
+  .plata-ring-center { display:none; }
+  .plata-pct { position:absolute; font-size:14px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -2190,35 +2202,47 @@
       return;
     }
     const maxCat=Math.max(...present.map(c=>byCat[c]));
-    // --- Plata-кольцо: SVG сегменты + проценты вокруг ---
-    const R=90, C=2*Math.PI*R, cx=105, cy=105;
-    let off=0, ringSegs='', ringPcts='';
-    present.forEach(cat=>{
-      const v=byCat[cat], m=META(cat);
+    // --- Plata-шар: сплошной градиент + тонкие внешние дуги ---
+    const PLATA_COLORS=[
+      ['#5b5bef','#3d8bff'],['#ff8a2a','#ff3d6e'],['#00c2a8','#00d68f'],
+      ['#a259ff','#6b4bff'],['#ff5b7f','#ff2d9c'],['#ffb02e','#ff7a2a'],
+      ['#2ec5ff','#3d8bff'],['#66d43a','#28b463']
+    ];
+    // размер viewBox 210, шар в центре, дуги по радиусу 100
+    const R=100, C=2*Math.PI*R, cx=105, cy=105;
+    let off=0, arcs='', ringPcts='', defs='';
+    present.forEach((cat,i)=>{
+      const v=byCat[cat];
       const frac=v/catGrand;
       const len=frac*C;
-      ringSegs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${m.color}" stroke-width="26" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" stroke-linecap="butt"/>`;
-      // процент по центру сегмента
-      const mid=off+len/2;
-      const ang=(mid/C)*2*Math.PI - Math.PI/2;
-      const pr=R+26;
-      const px=cx+Math.cos(ang)*pr, py=cy+Math.sin(ang)*pr;
+      const col=PLATA_COLORS[i%PLATA_COLORS.length];
       const pct=Math.round(frac*100);
-      if(pct>=4)ringPcts+=`<div class="plata-pct" style="left:${px}px;top:${py}px;transform:translate(-50%,-50%)">${pct}%</div>`;
+      // тонкая внешняя дуга только для заметных долей (как 4 дуги в Plata)
+      if(pct>=5){
+        defs+=`<linearGradient id="pa${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${col[0]}"/><stop offset="1" stop-color="${col[1]}"/></linearGradient>`;
+        const gap=len*0.28; // дуга короче сектора, с отступами
+        arcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="url(#pa${i})" stroke-width="4.5" stroke-dasharray="${len-gap} ${C-(len-gap)}" stroke-dashoffset="${-(off+gap/2)}" stroke-linecap="round"/>`;
+        // процент на середине дуги
+        const mid=off+len/2;
+        const ang=(mid/C)*2*Math.PI - Math.PI/2;
+        const pr=R+16;
+        const px=cx+Math.cos(ang)*pr, py=cy+Math.sin(ang)*pr;
+        ringPcts+=`<div class="plata-pct" style="left:${px/210*100}%;top:${py/210*100}%;transform:translate(-50%,-50%)">${pct}%</div>`;
+      }
       off+=len;
     });
     $('plataRing').innerHTML=`<div class="plata-ring">
-      <svg viewBox="0 0 210 210">${ringSegs}</svg>
-      <div class="plata-ring-center"><div class="prc-val">${fmt(catGrand)}</div><div class="prc-lbl">сум всего</div></div>
+      <div class="plata-orb"></div>
+      <svg viewBox="0 0 210 210"><defs>${defs}</defs>${arcs}</svg>
       ${ringPcts}
     </div>`;
+    // легенда использует те же яркие цвета
     let bubbles='', legend='';
-    present.forEach(cat=>{
+    present.forEach((cat,i)=>{
       const v=byCat[cat], m=META(cat);
-      const size=Math.round(56+ (v/maxCat)*72); // 56..128px
-      bubbles+=`<div class="bubble" style="width:${size}px;height:${size}px;background:${m.color};font-size:${Math.round(size*0.32)}px">${m.icon}</div>`;
+      const col=PLATA_COLORS[i%PLATA_COLORS.length];
       const pct=(v/catGrand*100).toFixed(1).replace('.0','');
-      legend+=`<div class="bub-legend-row"><span class="bub-dot" style="background:${m.color}"></span>
+      legend+=`<div class="bub-legend-row"><span class="bub-dot" style="background:linear-gradient(135deg,${col[0]},${col[1]})"></span>
         <span class="bub-name">${m.icon} ${cat}<span class="bub-pct">${pct}%</span></span>
         <span class="bub-val">${fmt(v)} сум</span></div>`;
     });
