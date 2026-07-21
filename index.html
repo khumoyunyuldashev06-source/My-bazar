@@ -601,6 +601,8 @@
   .cb-val { color:var(--ink); }
   .plan-card .add, .plan-card button { }
   #planToBuyBtn, .plan-card .save-bazar { background:var(--grad); color:#fff; box-shadow:0 6px 16px rgba(255,77,13,.3); }
+  .plan-copy { width:100%; margin-top:9px; background:var(--bg2); color:var(--ink); border:none; border-radius:var(--r-m); padding:14px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform .13s var(--ease); }
+  .plan-copy:active { transform:scale(.98); }
   .cash-card[style] { background:var(--card) !important; } /* перекрываем инлайн-градиент телефона */
 
   /* --- Долги: мягкие семантические карты --- */
@@ -1143,6 +1145,7 @@
       <div class="plan-v" id="planTotal">—</div>
       <div class="plan-s" id="planSub">Запиши, что нужно купить</div>
       <button class="plan-tobuy" id="planToBuyBtn" data-ru="Перенести в Базар"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg><span>Перенести в Базар</span></button>
+      <button class="plan-copy" id="planCopyBtn" data-ru="Скопировать для продавца"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Скопировать для продавца</span></button>
     </div>
 
     <div class="add-form">
@@ -2448,16 +2451,32 @@
   $('planClearBtn').addEventListener('click',()=>{
     if(plan.length) modal('Очистить план?','Весь список плана будет удалён.','Очистить',()=>{ plan=[]; savePlan(); renderPlan(); });
   });
-  // копировать план
+  // копировать план для продавца
   $('planCopyBtn').addEventListener('click',()=>{
-    const lines=plan.map(p=>{
-      if(p.type==='cat'){ const it=catalog.find(c=>c.id===p.id); return it?`• ${it.name} × ${p.qty} ${it.unit||'шт'}`:''; }
-      return `• ${p.text}`;
-    }).filter(Boolean);
-    if(!lines.length)return;
-    const sum=planSum();
-    const txt='ПЛАН НА БАЗАР:\n'+lines.join('\n')+(sum>0?`\n\nПримерно: ${fmt(sum)} сум`:'');
-    navigator.clipboard.writeText(txt).then(()=>{ $('planCopyBtn').textContent='Готово'; setTimeout(()=>$('planCopyBtn').textContent='Скопировать',1500); });
+    let out=[]; let total=0;
+    // товары по разделам
+    CATS_LIST().forEach(cat=>{
+      const items=plan.filter(p=>p.type==='cat').map(p=>({p,it:catalog.find(c=>c.id===p.id)})).filter(x=>x.it&&x.it.cat===cat);
+      if(!items.length)return;
+      const m=sections.find(s=>s.name===cat);
+      const emo=(m&&m.icon&&String(m.icon).indexOf('<')!==0)?m.icon+' ':'';
+      out.push(`${emo}${cat.toUpperCase()}`);
+      items.forEach(({p,it})=>{
+        const s=it.price*p.qty; total+=s;
+        out.push(`${it.name} — ${p.qty} (${fmt(s)})`);
+      });
+      out.push('');
+    });
+    // заметки
+    const notes=plan.filter(p=>p.type==='note');
+    if(notes.length){ out.push('📌 ЗАМЕТКИ'); notes.forEach(n=>out.push(`• ${n.text}`)); out.push(''); }
+    if(!out.length)return;
+    out.push(`ИТОГО: ${fmt(total)} сум`);
+    const txt=out.join('\n').replace(/\n\n+/g,'\n\n').trim();
+    navigator.clipboard.writeText(txt).then(()=>{
+      const sp=$('planCopyBtn').querySelector('span'); const old=sp.textContent;
+      sp.textContent='Скопировано ✓'; setTimeout(()=>sp.textContent=old,1800);
+    });
   });
 
   // ===== Касса (выручка, расходы, прибыль) =====
