@@ -866,7 +866,7 @@
   .scan-hint { position:absolute; bottom:calc(40px + env(safe-area-inset-bottom)); left:0; right:0; text-align:center; color:#fff; font-size:15px; font-weight:600; padding:0 30px; text-shadow:0 1px 4px rgba(0,0,0,.6); }
   /* --- Фото товара --- */
   .cat-photo { width:44px; height:44px; border-radius:11px; object-fit:cover; flex-shrink:0; }
-  .cat-photo-add { border:1.5px dashed var(--line); background:var(--bg2); color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+  .cat-photo-add { border:1.5px dashed var(--line); background:var(--bg2); color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; position:relative; }
   .cat-photo-add svg { pointer-events:none; }
   .cat-photo { pointer-events:auto; }
   .cat-photo-add:active { transform:scale(.92); }
@@ -1836,7 +1836,7 @@
         }
         const hasHist=it.priceHist&&it.priceHist.length>=2;
         return `<div class="cat-item">
-          ${it.photo?`<img class="cat-photo" src="${it.photo}" data-photozoom="${it.id}">`:`<button class="cat-photo cat-photo-add" data-addphoto="${it.id}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>`}
+          ${it.photo?`<img class="cat-photo" src="${it.photo}" data-photozoom="${it.id}">`:`<label class="cat-photo cat-photo-add"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><input type="file" accept="image/*" data-photofor="${it.id}" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden"></label>`}
           <div class="cat-info"><div class="cat-name">${esc(it.name)}${it.barcode?' <span class="cat-bc" title="Есть штрихкод">▮▮</span>':''}</div>
           <div class="cat-price">${fmt(it.price)} сум / ${esc(it.unit||'шт')}${trend}</div></div>
           ${hasHist?`<button class="icon-btn hist-btn" data-pricehist="${it.id}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg></button>`:''}
@@ -2021,8 +2021,6 @@
   $('catGroups').addEventListener('click',e=>{
     const ph=e.target.closest('[data-pricehist]');
     if(ph){ const it=catalog.find(c=>c.id===ph.dataset.pricehist); if(it)showPriceHist(it); return; }
-    const ap=e.target.closest('[data-addphoto]');
-    if(ap){ photoTargetId=ap.dataset.addphoto; $('photoInput').click(); return; }
     const pz=e.target.closest('[data-photozoom]');
     if(pz){ const it=catalog.find(c=>c.id===pz.dataset.photozoom); if(it&&it.photo){ $('photoZoomImg').src=it.photo; $('photoZoom').classList.add('show'); } return; }
     const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
@@ -2033,6 +2031,26 @@
         saveCat(); saveQty(); renderCat(); renderBuy();
       });
     }
+  });
+  // фото товара через label+input внутри карточки
+  $('catGroups').addEventListener('change',e=>{
+    const inp=e.target.closest('[data-photofor]'); if(!inp)return;
+    const file=inp.files[0]; if(!file)return;
+    const id=inp.dataset.photofor;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=200, scale=Math.min(max/img.width,max/img.height,1);
+        const cv=document.createElement('canvas');
+        cv.width=img.width*scale; cv.height=img.height*scale;
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        const it=catalog.find(c=>c.id===id);
+        if(it){ it.photo=cv.toDataURL('image/jpeg',0.6); saveCat(); renderCat(); }
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
   });
   // фото товара: сжатие и сохранение
   let photoTargetId=null;
