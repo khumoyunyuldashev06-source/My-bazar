@@ -846,6 +846,32 @@
   .prc-lbl { display:none; }
   .plata-ring-center { display:none; }
   .plata-pct { position:absolute; font-size:14px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  /* --- Линейный график (BILLZ-стиль) --- */
+  .line-legend { display:flex; gap:16px; margin:2px 0 12px; }
+  .ll-item { display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--muted); }
+  .ll-dot { width:9px; height:9px; border-radius:50%; }
+  .line-chart-svg { width:100%; height:auto; overflow:visible; }
+  .lc-grid { stroke:var(--line); stroke-width:1; }
+  .lc-lbl { fill:var(--muted); font-size:9px; font-weight:600; }
+  /* --- Сканер штрихкодов --- */
+  .scan-btn { flex-shrink:0; width:38px; height:38px; border:none; background:var(--soft); color:var(--accent); border-radius:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-left:6px; }
+  .scan-btn:active { transform:scale(.9); }
+  .scan-modal { position:fixed; inset:0; z-index:100; background:#000; display:none; flex-direction:column; }
+  .scan-modal.show { display:flex; }
+  .scan-modal video { width:100%; height:100%; object-fit:cover; }
+  .scan-frame { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; max-width:300px; aspect-ratio:1.4; border:3px solid rgba(255,255,255,.9); border-radius:16px; box-shadow:0 0 0 2000px rgba(0,0,0,.5); }
+  .scan-line { position:absolute; left:0; right:0; height:2px; background:var(--accent); box-shadow:0 0 12px var(--accent); animation:scanMove 2s ease-in-out infinite; }
+  @keyframes scanMove { 0%,100%{top:6%} 50%{top:94%} }
+  .scan-close { position:absolute; top:calc(16px + env(safe-area-inset-top)); right:16px; z-index:2; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); backdrop-filter:blur(10px); border:none; color:#fff; font-size:20px; cursor:pointer; }
+  .scan-hint { position:absolute; bottom:calc(40px + env(safe-area-inset-bottom)); left:0; right:0; text-align:center; color:#fff; font-size:15px; font-weight:600; padding:0 30px; text-shadow:0 1px 4px rgba(0,0,0,.6); }
+  /* --- Фото товара --- */
+  .cat-photo { width:44px; height:44px; border-radius:11px; object-fit:cover; flex-shrink:0; }
+  .cat-photo-add { border:1.5px dashed var(--line); background:var(--bg2); color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+  .cat-photo-add:active { transform:scale(.92); }
+  .cat-bc { font-size:10px; color:var(--accent); letter-spacing:-1px; vertical-align:middle; }
+  .photo-zoom { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.9); display:none; align-items:center; justify-content:center; padding:30px; }
+  .photo-zoom.show { display:flex; }
+  .photo-zoom img { max-width:100%; max-height:80%; border-radius:16px; }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -1032,7 +1058,7 @@
         <button id="resetBtnTop" data-ru="Сбросить"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 20v-4h4"/></svg><span>Сбросить</span></button>
       </div>
     </div>
-    <div class="search-box"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
+    <div class="search-box"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="scan-btn" id="scanBtn" title="Сканер"><svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg></button><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
     <div id="buyGroups"></div>
     <div class="actions">
       <button id="copyBtn" data-ru="Скопировать"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Скопировать</span></button>
@@ -1093,6 +1119,11 @@
       <button data-mp="6" data-ru="6 мес">6 мес</button>
       <button data-mp="12" data-ru="Год">Год</button>
       <button data-mp="0" data-ru="Всё">Всё</button>
+    </div>
+    <div class="analytics">
+      <h4><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg><span data-ru="Динамика по дням">Динамика по дням</span></h4>
+      <div class="line-legend"><span class="ll-item"><span class="ll-dot" style="background:#2ec46b"></span>Выручка</span><span class="ll-item"><span class="ll-dot" style="background:#ff5b3d"></span>Закупки</span></div>
+      <div id="lineChart"></div>
     </div>
     <div class="analytics">
       <h4><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg><span>Доход и расход по месяцам</span></h4>
@@ -1281,6 +1312,16 @@
   </div>
 
   <div class="ptr" id="ptr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-5h5"/></svg></div>
+
+  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+  <div class="photo-zoom" id="photoZoom"><img id="photoZoomImg" src=""></div>
+
+  <div class="scan-modal" id="scanModal">
+    <button class="scan-close" id="scanClose">✕</button>
+    <video id="scanVideo" playsinline></video>
+    <div class="scan-frame"><div class="scan-line"></div></div>
+    <div class="scan-hint" id="scanHint">Наведи камеру на штрихкод</div>
+  </div>
 
   <button class="calc-fab" id="calcFab" title="Калькулятор"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h4"/></svg></button>
 
@@ -1793,7 +1834,8 @@
         }
         const hasHist=it.priceHist&&it.priceHist.length>=2;
         return `<div class="cat-item">
-          <div class="cat-info"><div class="cat-name">${esc(it.name)}</div>
+          ${it.photo?`<img class="cat-photo" src="${it.photo}" data-photozoom="${it.id}">`:`<button class="cat-photo cat-photo-add" data-addphoto="${it.id}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>`}
+          <div class="cat-info"><div class="cat-name">${esc(it.name)}${it.barcode?' <span class="cat-bc" title="Есть штрихкод">▮▮</span>':''}</div>
           <div class="cat-price">${fmt(it.price)} сум / ${esc(it.unit||'шт')}${trend}</div></div>
           ${hasHist?`<button class="icon-btn hist-btn" data-pricehist="${it.id}"></button>`:''}
           <button class="icon-btn edit-btn" data-edit="${it.id}">${ICON.edit}</button>
@@ -1977,6 +2019,10 @@
   $('catGroups').addEventListener('click',e=>{
     const ph=e.target.closest('[data-pricehist]');
     if(ph){ const it=catalog.find(c=>c.id===ph.dataset.pricehist); if(it)showPriceHist(it); return; }
+    const ap=e.target.closest('[data-addphoto]');
+    if(ap){ photoTargetId=ap.dataset.addphoto; $('photoInput').click(); return; }
+    const pz=e.target.closest('[data-photozoom]');
+    if(pz){ const it=catalog.find(c=>c.id===pz.dataset.photozoom); if(it&&it.photo){ $('photoZoomImg').src=it.photo; $('photoZoom').classList.add('show'); } return; }
     const ed=e.target.closest('[data-edit]'); const dl=e.target.closest('[data-del]');
     if(ed){ const it=catalog.find(c=>c.id===ed.dataset.edit); if(it)startEdit(it); return; }
     if(dl){ const it=catalog.find(c=>c.id===dl.dataset.del); if(!it)return;
@@ -1986,6 +2032,28 @@
       });
     }
   });
+  // фото товара: сжатие и сохранение
+  let photoTargetId=null;
+  if($('photoInput'))$('photoInput').addEventListener('change',e=>{
+    const file=e.target.files[0]; if(!file||!photoTargetId)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        // сжимаем до 200px чтобы не раздувать данные
+        const max=200, scale=Math.min(max/img.width,max/img.height,1);
+        const cv=document.createElement('canvas');
+        cv.width=img.width*scale; cv.height=img.height*scale;
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        const it=catalog.find(c=>c.id===photoTargetId);
+        if(it){ it.photo=cv.toDataURL('image/jpeg',0.6); saveCat(); renderCat(); }
+        photoTargetId=null; e.target.value='';
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  if($('photoZoom'))$('photoZoom').addEventListener('click',()=>$('photoZoom').classList.remove('show'));
 
   // Быстрое изменение цены на базаре
   $('buyGroups').addEventListener('click',e=>{
@@ -2249,6 +2317,44 @@
     $('bubbleArea').innerHTML='';
     $('bubbleLegend').innerHTML=legend;
     renderMonAnalytics();
+    renderLineChart();
+  }
+
+  // Линейный график динамики по дням (BILLZ-стиль)
+  function renderLineChart(){
+    const el=$('lineChart'); if(!el)return;
+    // берём последние 14 дней с активностью
+    const cut=(monPeriod<=0)?null:(()=>{ const c=new Date(); c.setMonth(c.getMonth()-monPeriod+1); c.setDate(1); c.setHours(0,0,0,0); return c; })();
+    const inP=d=>!cut||new Date(d)>=cut;
+    // группируем по дням
+    const days={};
+    const addDay=(date,key,val)=>{ const d=new Date(date).toISOString().slice(0,10); if(!days[d])days[d]={rev:0,buy:0}; days[d][key]+=val; };
+    revenue.filter(r=>inP(r.date)).forEach(r=>addDay(r.date,'rev',r.amount));
+    hist.filter(h=>inP(h.date)).forEach(h=>addDay(h.date,'buy',h.total));
+    const keys=Object.keys(days).sort().slice(-14);
+    if(keys.length<2){ el.innerHTML='<div class="empty" style="padding:20px">Мало данных для графика<br>Нужно минимум 2 дня операций</div>'; return; }
+    const revs=keys.map(k=>days[k].rev), buys=keys.map(k=>days[k].buy);
+    const max=Math.max(...revs,...buys,1);
+    const W=320, H=140, pad=8, bottom=20;
+    const x=i=>pad+(i/(keys.length-1))*(W-pad*2);
+    const y=v=>H-bottom-(v/max)*(H-bottom-pad);
+    const path=arr=>arr.map((v,i)=>`${i===0?'M':'L'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+    // область под выручкой
+    const areaRev=`${path(revs)} L${x(keys.length-1)} ${H-bottom} L${x(0)} ${H-bottom} Z`;
+    // подписи дат (каждая 3-я)
+    let labels='';
+    keys.forEach((k,i)=>{ if(i%Math.ceil(keys.length/5)===0||i===keys.length-1){ const d=new Date(k); labels+=`<text class="lc-lbl" x="${x(i)}" y="${H-6}" text-anchor="middle">${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</text>`; } });
+    // точки на выручке
+    let dots='';
+    revs.forEach((v,i)=>{ dots+=`<circle cx="${x(i)}" cy="${y(v)}" r="2.5" fill="#2ec46b"/>`; });
+    el.innerHTML=`<svg class="line-chart-svg" viewBox="0 0 ${W} ${H}">
+      <defs><linearGradient id="revArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2ec46b" stop-opacity="0.22"/><stop offset="1" stop-color="#2ec46b" stop-opacity="0"/></linearGradient></defs>
+      <line class="lc-grid" x1="${pad}" y1="${H-bottom}" x2="${W-pad}" y2="${H-bottom}"/>
+      <path d="${areaRev}" fill="url(#revArea)"/>
+      <path d="${path(buys)}" fill="none" stroke="#ff5b3d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${path(revs)}" fill="none" stroke="#2ec46b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}${labels}
+    </svg>`;
   }
 
   // ===== Аналитика: сравнение, топ, прогноз =====
@@ -3201,6 +3307,63 @@
     $('authTgBtn').textContent='Вхожу...';
     await applyLogin(cloudTgId);
   });
+
+  // ===== Сканер штрихкодов =====
+  let scanStream=null, scanRAF=null;
+  async function openScan(){
+    // проверка поддержки
+    if(!('BarcodeDetector' in window)){
+      modal('Сканер недоступен','Твой браузер не поддерживает сканер штрихкодов. Открой приложение в Safari или Chrome последней версии.','Ок',null,true);
+      return;
+    }
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      modal('Нет доступа к камере','Не удалось получить доступ к камере на этом устройстве.','Ок',null,true);
+      return;
+    }
+    try{
+      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      const v=$('scanVideo'); v.srcObject=scanStream; await v.play();
+      $('scanModal').classList.add('show');
+      const detector=new window.BarcodeDetector();
+      const tick=async()=>{
+        if(!$('scanModal').classList.contains('show'))return;
+        try{
+          const codes=await detector.detect(v);
+          if(codes&&codes.length){
+            const code=codes[0].rawValue;
+            onScanned(code);
+            return;
+          }
+        }catch(e){}
+        scanRAF=requestAnimationFrame(tick);
+      };
+      scanRAF=requestAnimationFrame(tick);
+    }catch(e){
+      modal('Камера недоступна','Разреши доступ к камере в настройках, чтобы пользоваться сканером.','Ок',null,true);
+      closeScan();
+    }
+  }
+  function closeScan(){
+    $('scanModal').classList.remove('show');
+    if(scanRAF)cancelAnimationFrame(scanRAF);
+    if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  }
+  function onScanned(code){
+    closeScan();
+    // ищем товар по сохранённому штрихкоду или по имени
+    const found=catalog.find(it=>it.barcode===code);
+    if(found){
+      // добавляем в базар +1 и подсвечиваем
+      qty[found.id]=(qty[found.id]||0)+1; saveQty(); renderBuy();
+      switchTab('Buy');
+      modal('Товар найден','«'+found.name+'» добавлен в закупку (+1).','Ок',null,true);
+    } else {
+      // предлагаем привязать к товару
+      modal('Штрихкод '+code,'Такого штрихкода нет в каталоге. Открой товар в Каталоге и привяжи этот код через ✎, тогда сканер будет его узнавать.','Ок',null,true);
+    }
+  }
+  if($('scanBtn'))$('scanBtn').addEventListener('click',openScan);
+  if($('scanClose'))$('scanClose').addEventListener('click',closeScan);
 
   // ===== Калькулятор =====
   let calcExpr='';
