@@ -874,6 +874,10 @@
   .photo-zoom { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.9); display:none; align-items:center; justify-content:center; padding:30px; }
   .photo-zoom.show { display:flex; }
   .photo-zoom img { max-width:100%; max-height:80%; border-radius:16px; }
+  /* --- Фильтр закупки --- */
+  .buy-filter { display:flex; gap:4px; background:var(--bg2); border-radius:13px; padding:4px; margin:0 0 14px; }
+  .buy-filter button { flex:1; background:transparent; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:9px; border-radius:10px; cursor:pointer; font-family:inherit; transition:.15s; }
+  .buy-filter button.active { background:var(--card); color:var(--ink); box-shadow:var(--shadow-1); }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -1061,6 +1065,10 @@
       </div>
     </div>
     <div class="search-box"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="scan-btn" id="scanBtn" title="Сканер"><svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg></button><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
+    <div class="buy-filter" id="buyFilter">
+      <button data-bf="active" class="active" data-ru="В закупке">В закупке</button>
+      <button data-bf="all" data-ru="Все товары">Все товары</button>
+    </div>
     <div id="buyGroups"></div>
     <div class="actions">
       <button id="copyBtn" data-ru="Скопировать"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Скопировать</span></button>
@@ -1773,14 +1781,19 @@
 
   let buySearchQuery='';
   let buyCollapsed={};
+  let buyFilterMode='active'; // active = только с количеством, all = все
   function renderBuy(){
     const wrap=$('buyGroups');
     if(catalog.length===0){ wrap.innerHTML='<div class="empty">Каталог пуст<br>Открой «Каталог» и добавь товары с ценами.</div>'; renderTotal(); return; }
     const q=buySearchQuery.trim().toLowerCase();
+    // если нет ни одного товара с количеством — показываем все (первый заход)
+    const anyQty=catalog.some(it=>(qty[it.id]||0)>0);
+    const onlyActive=buyFilterMode==='active'&&anyQty&&!q;
     let html='', found=0;
     CATS_LIST().forEach(cat=>{
       let items=catalog.filter(it=>it.cat===cat);
       if(q)items=items.filter(it=>it.name.toLowerCase().includes(q));
+      if(onlyActive)items=items.filter(it=>(qty[it.id]||0)>0);
       if(!items.length)return;
       found+=items.length;
       const m=META(cat);
@@ -1807,8 +1820,17 @@
       html+='</div>';
     });
     if(q&&found===0)html='<div class="empty">Ничего не найдено<br>Попробуй другое название.</div>';
+    if(!html&&onlyActive)html='<div class="empty">В закупке пока пусто<br>Добавь товары из «Плана» или переключись на «Все товары».</div>';
     wrap.innerHTML=html; renderTotal();
+    // синхронизируем вид переключателя
+    const bf=$('buyFilter');
+    if(bf){ bf.style.display=anyQty?'flex':'none'; [...bf.children].forEach(b=>b.classList.toggle('active',b.dataset.bf===buyFilterMode)); }
   }
+  // переключатель режима закупки
+  if($('buyFilter'))$('buyFilter').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-bf]'); if(!b)return;
+    buyFilterMode=b.dataset.bf; renderBuy();
+  });
 
   let searchQuery='';
   let catSort='added';
