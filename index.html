@@ -859,7 +859,9 @@
   .scan-modal { position:fixed; inset:0; z-index:100; background:#000; display:none; flex-direction:column; }
   .scan-modal.show { display:flex; }
   .scan-modal video { width:100%; height:100%; object-fit:cover; }
-  .scan-frame { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; max-width:300px; aspect-ratio:1.4; border:3px solid rgba(255,255,255,.9); border-radius:16px; box-shadow:0 0 0 2000px rgba(0,0,0,.5); }
+  .scan-modal #scanReader { width:100%; height:100%; }
+  .scan-modal #scanReader video { width:100% !important; height:100% !important; object-fit:cover !important; }
+  .scan-frame { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; max-width:280px; aspect-ratio:1.5; border:3px solid rgba(255,255,255,.9); border-radius:16px; pointer-events:none; z-index:2; }
   .scan-line { position:absolute; left:0; right:0; height:2px; background:var(--accent); box-shadow:0 0 12px var(--accent); animation:scanMove 2s ease-in-out infinite; }
   @keyframes scanMove { 0%,100%{top:6%} 50%{top:94%} }
   .scan-close { position:absolute; top:calc(16px + env(safe-area-inset-top)); right:16px; z-index:2; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); backdrop-filter:blur(10px); border:none; color:#fff; font-size:20px; cursor:pointer; }
@@ -949,6 +951,7 @@
   .ptr.spin .ptr-spin { animation:ptrSpin .7s linear infinite; }
   @keyframes ptrSpin { to { transform:rotate(360deg); } }
 </style>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
   <div class="ptr" id="ptr"><svg class="ptr-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg></div>
@@ -1330,7 +1333,7 @@
 
   <div class="scan-modal" id="scanModal">
     <button class="scan-close" id="scanClose">✕</button>
-    <video id="scanVideo" playsinline></video>
+    <div id="scanReader" style="width:100%;height:100%"></div>
     <div class="scan-frame"><div class="scan-line"></div></div>
     <div class="scan-hint" id="scanHint">Наведи камеру на штрихкод</div>
   </div>
@@ -3353,57 +3356,49 @@
     await applyLogin(cloudTgId);
   });
 
-  // ===== Сканер штрихкодов =====
-  let scanStream=null, scanRAF=null;
+  // ===== Сканер штрихкодов (html5-qrcode, работает на iPhone) =====
+  let html5Scanner=null;
   async function openScan(){
-    // проверка поддержки
-    if(!('BarcodeDetector' in window)){
-      modal('Сканер недоступен','Твой браузер не поддерживает сканер штрихкодов. Открой приложение в Safari или Chrome последней версии.','Ок',null,true);
+    if(typeof Html5Qrcode==='undefined'){
+      modal('Сканер не загрузился','Нужен интернет, чтобы загрузить сканер. Проверь соединение и попробуй снова.','Ок',null,true);
       return;
     }
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-      modal('Нет доступа к камере','Не удалось получить доступ к камере на этом устройстве.','Ок',null,true);
-      return;
-    }
+    $('scanModal').classList.add('show');
     try{
-      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-      const v=$('scanVideo'); v.srcObject=scanStream; await v.play();
-      $('scanModal').classList.add('show');
-      const detector=new window.BarcodeDetector();
-      const tick=async()=>{
-        if(!$('scanModal').classList.contains('show'))return;
-        try{
-          const codes=await detector.detect(v);
-          if(codes&&codes.length){
-            const code=codes[0].rawValue;
-            onScanned(code);
-            return;
-          }
-        }catch(e){}
-        scanRAF=requestAnimationFrame(tick);
-      };
-      scanRAF=requestAnimationFrame(tick);
+      html5Scanner=new Html5Qrcode('scanReader',{
+        formatsToSupport:[
+          Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ]
+      });
+      await html5Scanner.start(
+        {facingMode:'environment'},
+        {fps:10, qrbox:{width:250,height:160}, aspectRatio:1.0},
+        (decodedText)=>{ onScanned(decodedText); },
+        ()=>{}
+      );
     }catch(e){
-      modal('Камера недоступна','Разреши доступ к камере в настройках, чтобы пользоваться сканером.','Ок',null,true);
       closeScan();
+      modal('Камера недоступна','Разреши доступ к камере в настройках браузера, чтобы пользоваться сканером.','Ок',null,true);
     }
   }
-  function closeScan(){
+  async function closeScan(){
     $('scanModal').classList.remove('show');
-    if(scanRAF)cancelAnimationFrame(scanRAF);
-    if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+    if(html5Scanner){
+      try{ await html5Scanner.stop(); html5Scanner.clear(); }catch(e){}
+      html5Scanner=null;
+    }
   }
   function onScanned(code){
     closeScan();
-    // ищем товар по сохранённому штрихкоду или по имени
     const found=catalog.find(it=>it.barcode===code);
     if(found){
-      // добавляем в базар +1 и подсвечиваем
       qty[found.id]=(qty[found.id]||0)+1; saveQty(); renderBuy();
       switchTab('Buy');
       modal('Товар найден','«'+found.name+'» добавлен в закупку (+1).','Ок',null,true);
     } else {
-      // предлагаем привязать к товару
       modal('Штрихкод '+code,'Такого штрихкода нет в каталоге. Открой товар в Каталоге и привяжи этот код через ✎, тогда сканер будет его узнавать.','Ок',null,true);
     }
   }
