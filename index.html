@@ -506,7 +506,6 @@
   @keyframes panelIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
   .panel.active { animation:panelIn .32s var(--ease); }
   @keyframes cardIn { from { opacity:0; transform:translateY(6px) scale(.99); } to { opacity:1; transform:none; } }
-  .buy-item, .plan-item, .rev-item, .exp-item, .debt-item, .day-card { animation:cardIn .28s var(--ease) backwards; }
   .modal-bg.show .modal { animation:panelIn .26s var(--ease); }
   .phone-screen.show { animation:panelIn .3s var(--ease); }
 
@@ -947,6 +946,8 @@
   .ptr.spin .ptr-spin { animation:ptrSpin .7s linear infinite; }
   @keyframes ptrSpin { to { transform:rotate(360deg); } }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="ptr" id="ptr"><svg class="ptr-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg></div>
@@ -973,7 +974,7 @@
   <header>
     <div class="title-row">
       <div class="basket"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
-      <div style="flex:1"><h1>My Business</h1></div>
+      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v8</span></h1></div>
       <div class="sync-badge" id="syncBadge" title="Синхронизация"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6.5 19z"/></svg></div>
     </div>
   </header>
@@ -1133,7 +1134,7 @@
     <div class="analytics">
       <h4><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg><span data-ru="Динамика по дням">Динамика по дням</span></h4>
       <div class="line-legend"><span class="ll-item"><span class="ll-dot" style="background:#2ec46b"></span>Выручка</span><span class="ll-item"><span class="ll-dot" style="background:#ff5b3d"></span>Закупки</span></div>
-      <div id="lineChart"></div>
+      <div id="lineChart" style="position:relative;height:180px"><canvas id="lineCanvas"></canvas></div>
     </div>
     <div class="analytics">
       <h4><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg><span>Доход и расход по месяцам</span></h4>
@@ -1700,6 +1701,20 @@
   });
 
   const $=id=>document.getElementById(id);
+  // умный поиск: Fuse.js (с опечатками) + fallback на includes
+  function smartFilter(items, query, keys){
+    const q=(query||'').trim();
+    if(!q)return items;
+    if(typeof Fuse!=='undefined'){
+      try{
+        const fuse=new Fuse(items,{ keys:keys||['name'], threshold:0.4, ignoreLocation:true, minMatchCharLength:1 });
+        return fuse.search(q).map(r=>r.item);
+      }catch(e){}
+    }
+    // fallback
+    const ql=q.toLowerCase();
+    return items.filter(it=>(keys||['name']).some(k=>String(it[k]||'').toLowerCase().includes(ql)));
+  }
   const fmt=n=>Number(n).toLocaleString('ru-RU');
   function saveCat(){ try{localStorage.setItem(KEY,JSON.stringify(catalog));}catch(e){} cloudSync(); }
   function saveQty(){ try{localStorage.setItem(QKEY,JSON.stringify(qty));}catch(e){} cloudSync(); }
@@ -1788,7 +1803,7 @@
     let html='', found=0;
     CATS_LIST().forEach(cat=>{
       let items=catalog.filter(it=>it.cat===cat);
-      if(q)items=items.filter(it=>it.name.toLowerCase().includes(q));
+      if(q)items=smartFilter(items,q,['name']);
       if(onlyActive)items=items.filter(it=>(qty[it.id]||0)>0);
       if(!items.length)return;
       found+=items.length;
@@ -1838,7 +1853,7 @@
     let html='', found=0;
     CATS_LIST().forEach(cat=>{
       let items=catalog.filter(it=>it.cat===cat);
-      if(q)items=items.filter(it=>it.name.toLowerCase().includes(q));
+      if(q)items=smartFilter(items,q,['name']);
       if(catSort==='name')items=items.slice().sort((a,b)=>a.name.localeCompare(b.name,'ru'));
       else if(catSort==='price')items=items.slice().sort((a,b)=>b.price-a.price);
       if(!items.length)return;
@@ -2360,40 +2375,51 @@
   }
 
   // Линейный график динамики по дням (BILLZ-стиль)
+  let lineChartObj=null;
   function renderLineChart(){
-    const el=$('lineChart'); if(!el)return;
-    // берём последние 14 дней с активностью
+    const box=$('lineChart'); if(!box)return;
     const cut=(monPeriod<=0)?null:(()=>{ const c=new Date(); c.setMonth(c.getMonth()-monPeriod+1); c.setDate(1); c.setHours(0,0,0,0); return c; })();
     const inP=d=>!cut||new Date(d)>=cut;
-    // группируем по дням
     const days={};
     const addDay=(date,key,val)=>{ const d=new Date(date).toISOString().slice(0,10); if(!days[d])days[d]={rev:0,buy:0}; days[d][key]+=val; };
     revenue.filter(r=>inP(r.date)).forEach(r=>addDay(r.date,'rev',r.amount));
     hist.filter(h=>inP(h.date)).forEach(h=>addDay(h.date,'buy',h.total));
     const keys=Object.keys(days).sort().slice(-14);
-    if(keys.length<2){ el.innerHTML='<div class="empty" style="padding:20px">Мало данных для графика<br>Нужно минимум 2 дня операций</div>'; return; }
+    if(keys.length<2){ box.innerHTML='<div class="empty" style="padding:20px">Мало данных для графика<br>Нужно минимум 2 дня операций</div>'; return; }
+    // восстановить canvas, если был заменён на empty
+    if(!$('lineCanvas'))box.innerHTML='<canvas id="lineCanvas"></canvas>';
     const revs=keys.map(k=>days[k].rev), buys=keys.map(k=>days[k].buy);
-    const max=Math.max(...revs,...buys,1);
-    const W=320, H=140, pad=8, bottom=20;
-    const x=i=>pad+(i/(keys.length-1))*(W-pad*2);
-    const y=v=>H-bottom-(v/max)*(H-bottom-pad);
-    const path=arr=>arr.map((v,i)=>`${i===0?'M':'L'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
-    // область под выручкой
-    const areaRev=`${path(revs)} L${x(keys.length-1)} ${H-bottom} L${x(0)} ${H-bottom} Z`;
-    // подписи дат (каждая 3-я)
-    let labels='';
-    keys.forEach((k,i)=>{ if(i%Math.ceil(keys.length/5)===0||i===keys.length-1){ const d=new Date(k); labels+=`<text class="lc-lbl" x="${x(i)}" y="${H-6}" text-anchor="middle">${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</text>`; } });
-    // точки на выручке
-    let dots='';
-    revs.forEach((v,i)=>{ dots+=`<circle cx="${x(i)}" cy="${y(v)}" r="2.5" fill="#2ec46b"/>`; });
-    el.innerHTML=`<svg class="line-chart-svg" viewBox="0 0 ${W} ${H}">
-      <defs><linearGradient id="revArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2ec46b" stop-opacity="0.22"/><stop offset="1" stop-color="#2ec46b" stop-opacity="0"/></linearGradient></defs>
-      <line class="lc-grid" x1="${pad}" y1="${H-bottom}" x2="${W-pad}" y2="${H-bottom}"/>
-      <path d="${areaRev}" fill="url(#revArea)"/>
-      <path d="${path(buys)}" fill="none" stroke="#ff5b3d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="${path(revs)}" fill="none" stroke="#2ec46b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      ${dots}${labels}
-    </svg>`;
+    const labels=keys.map(k=>{ const d=new Date(k); return d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0'); });
+    // fallback если Chart.js не загрузился
+    if(typeof Chart==='undefined'){
+      box.innerHTML='<div class="empty" style="padding:20px">График загружается...<br>Нужен интернет</div>'; return;
+    }
+    if(lineChartObj){ lineChartObj.destroy(); lineChartObj=null; }
+    const ctx=$('lineCanvas').getContext('2d');
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const grid=isDark?'rgba(255,255,255,.08)':'rgba(14,14,16,.06)';
+    const tick=isDark?'#9c9689':'#9b9183';
+    lineChartObj=new Chart(ctx,{
+      type:'line',
+      data:{ labels, datasets:[
+        { label:'Выручка', data:revs, borderColor:'#2ec46b', backgroundColor:'rgba(46,196,107,.12)', fill:true, tension:.35, borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#2ec46b', pointHoverRadius:5 },
+        { label:'Закупки', data:buys, borderColor:'#ff5b3d', backgroundColor:'transparent', fill:false, tension:.35, borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#ff5b3d', pointHoverRadius:5 }
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+fmt(c.parsed.y)+' сум' },
+            backgroundColor:isDark?'#26221c':'#fff', titleColor:isDark?'#f0ebe2':'#0e0e10', bodyColor:isDark?'#f0ebe2':'#0e0e10',
+            borderColor:grid, borderWidth:1, padding:10, cornerRadius:10, titleFont:{weight:'700'}, displayColors:true }
+        },
+        scales:{
+          x:{ grid:{ display:false }, ticks:{ color:tick, font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:6 } },
+          y:{ grid:{ color:grid }, ticks:{ color:tick, font:{size:10}, callback:v=>v>=1e6?(v/1e6).toFixed(0)+'М':v>=1e3?(v/1e3).toFixed(0)+'к':v } }
+        }
+      }
+    });
   }
 
   // ===== Аналитика: сравнение, топ, прогноз =====
@@ -2507,7 +2533,7 @@
     const q=planSearchQ.trim().toLowerCase();
     if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
     if(catalog.length===0){ box.innerHTML='<div class="plan-res-empty">Каталог пуст</div>'; box.classList.add('show'); return; }
-    const matches=catalog.filter(it=>it.name.toLowerCase().includes(q)).slice(0,30);
+    const matches=smartFilter(catalog,q,["name"]).slice(0,30);
     if(!matches.length){ box.innerHTML='<div class="plan-res-empty">Ничего не найдено</div>'; box.classList.add('show'); return; }
     box.innerHTML=matches.map(it=>{
       const m=META(it.cat);
@@ -2880,7 +2906,7 @@
   function renderDebtResults(){
     const box=$('debtResults'); const q=debtSearchQ.trim().toLowerCase();
     if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
-    const matches=catalog.filter(it=>it.name.toLowerCase().includes(q)).slice(0,30);
+    const matches=smartFilter(catalog,q,["name"]).slice(0,30);
     if(!matches.length){ box.innerHTML='<div class="plan-res-empty">Ничего не найдено</div>'; box.classList.add('show'); return; }
     box.innerHTML=matches.map(it=>{ const m=META(it.cat); return `<div class="plan-res-item" data-dpick="${it.id}"><span class="plan-res-ic">${m.icon}</span><span class="plan-res-name">${esc(it.name)}</span><span class="plan-res-price">${fmt(it.price)} сум</span></div>`; }).join('');
     box.classList.add('show');
