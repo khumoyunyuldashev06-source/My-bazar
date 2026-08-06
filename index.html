@@ -666,14 +666,15 @@
   .ht-in { font-size:14px; font-weight:800; color:#fff; }
   .ht-out { font-size:14px; font-weight:800; color:rgba(255,255,255,.85); }
   .home-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-  .home-widget { background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:16px 15px 14px; text-align:left; cursor:pointer; font-family:inherit; transition:transform .15s var(--ease), box-shadow .2s; }
+  .home-widget { background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:16px 15px 14px; text-align:left; cursor:pointer; font-family:inherit; box-shadow:0 1px 2px rgba(14,14,16,.03), 0 4px 14px rgba(14,14,16,.05); transition:transform .15s var(--ease), box-shadow .25s; }
+  .home-widget:active { transform:scale(.97); box-shadow:0 1px 3px rgba(14,14,16,.05), 0 8px 22px rgba(14,14,16,.09); }
   .home-widget:active { transform:scale(.97); }
   .hw-ic { font-size:22px; margin-bottom:8px; }
   .hw-val { font-size:20px; font-weight:800; letter-spacing:-0.02em; color:var(--ink); font-variant-numeric:tabular-nums; }
   .hw-lbl { font-size:12px; color:var(--muted); font-weight:600; margin-top:2px; }
   .home-qa-title { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin:0 2px 10px; }
   .home-qa { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:22px; }
-  .qa-btn { background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:13px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; transition:transform .13s var(--ease); }
+  .qa-btn { background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:13px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; box-shadow:0 1px 2px rgba(14,14,16,.03), 0 4px 12px rgba(14,14,16,.045); transition:transform .13s var(--ease); }
   .qa-btn:active { transform:scale(.94); }
   .qa-ic { width:34px; height:34px; border-radius:50%; background:var(--soft); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; }
   .home-rec { background:var(--card); border:1px solid var(--line); border-radius:var(--r-m); padding:12px 15px; display:flex; align-items:center; gap:11px; }
@@ -857,19 +858,9 @@
   .line-chart-svg { width:100%; height:auto; overflow:visible; }
   .lc-grid { stroke:var(--line); stroke-width:1; }
   .lc-lbl { fill:var(--muted); font-size:9px; font-weight:600; }
-  /* --- Анимация появления карточек (stagger) --- */
-  @keyframes cardIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
-  .panel.active .buy-item, .panel.active .cat-item, .panel.active .plan-item,
-  .panel.active .home-rec {
-    animation:cardIn .4s cubic-bezier(.32,.72,0,1) both;
-  }
-  .panel.active .buy-item:nth-child(1),.panel.active .cat-item:nth-child(1),.panel.active .home-rec:nth-child(1){animation-delay:.03s}
-  .panel.active .buy-item:nth-child(2),.panel.active .cat-item:nth-child(2),.panel.active .home-rec:nth-child(2){animation-delay:.06s}
-  .panel.active .buy-item:nth-child(3),.panel.active .cat-item:nth-child(3),.panel.active .home-rec:nth-child(3){animation-delay:.09s}
-  .panel.active .buy-item:nth-child(4),.panel.active .cat-item:nth-child(4),.panel.active .home-rec:nth-child(4){animation-delay:.12s}
-  .panel.active .buy-item:nth-child(5),.panel.active .cat-item:nth-child(5),.panel.active .home-rec:nth-child(5){animation-delay:.15s}
-  .panel.active .buy-item:nth-child(n+6),.panel.active .cat-item:nth-child(n+6){animation-delay:.17s}
-  @media (prefers-reduced-motion:reduce){ .panel.active .buy-item,.panel.active .cat-item,.panel.active .plan-item,.panel.active .home-rec{ animation:none !important; } }
+  /* --- Анимация появления карточек (stagger, управляется из JS) --- */
+  @keyframes cardIn { from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .buy-item,.cat-item,.plan-item,.home-rec,.home-widget,.qa-btn{ animation:none !important; opacity:1 !important; transform:none !important; } }
 
   /* --- Фото товара --- */
   .buy-photo { width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; margin-right:2px; }
@@ -3030,6 +3021,20 @@
     if(t==='Plan'){ fillPlanSelect(); renderPlan(); }
     if(t==='Cash'){ setRevDefaultDate(); renderCash(); }
     if(t==='Debt'){ setDebtDefaultDate(); renderDebt(); }
+    animatePanel(t);
+  }
+  // перезапуск анимации появления карточек в активной панели
+  function animatePanel(t){
+    const map={Home:'panelHome',Buy:'panelBuy',Plan:'panelBuy',Cat:'panelCat',Cash:'panelCash',Debt:'panelDebt',Hist:'panelHist',Mon:'panelMon',More:'panelMore'};
+    const p=$(map[t]||'panelHome'); if(!p)return;
+    const cards=p.querySelectorAll('.buy-item,.cat-item,.plan-item,.home-rec,.debt-item,.rev-item,.exp-item,.home-widget,.qa-btn');
+    cards.forEach((el,i)=>{
+      if(i>14)return; // анимируем первые 15, остальное сразу
+      el.style.animation='none';
+      void el.offsetWidth;
+      el.style.animation=`cardIn .4s cubic-bezier(.32,.72,0,1) both`;
+      el.style.animationDelay=(Math.min(i,10)*0.035)+'s';
+    });
   }
   function tapAnim(btn){
     btn.classList.remove('tapped');
@@ -3385,12 +3390,15 @@
   $('calcFab').addEventListener('click',()=>{ $('calcSheet').classList.add('show'); calcRender(); });
   // калькулятор тускнеет во время скролла, чтобы не мешать
   let calcScrollTimer=null;
-  window.addEventListener('scroll',()=>{
+  function dimCalc(){
     const fab=$('calcFab'); if(!fab)return;
     fab.classList.add('dimmed');
     clearTimeout(calcScrollTimer);
-    calcScrollTimer=setTimeout(()=>fab.classList.remove('dimmed'),600);
-  },{passive:true});
+    calcScrollTimer=setTimeout(()=>fab.classList.remove('dimmed'),700);
+  }
+  window.addEventListener('scroll',dimCalc,{passive:true});
+  document.addEventListener('scroll',dimCalc,{passive:true});
+  document.addEventListener('touchmove',dimCalc,{passive:true});
   $('calcClose').addEventListener('click',()=>$('calcSheet').classList.remove('show'));
   $('calcSheet').addEventListener('click',e=>{ if(e.target===$('calcSheet'))$('calcSheet').classList.remove('show'); });
   $('calcKeys').addEventListener('click',e=>{
@@ -3411,7 +3419,7 @@
   fillCatSelect();
   renderBuy(); renderCat(); renderHist(); renderHome();
   applyLang();
-  requestAnimationFrame(()=>{ moveNavPill(); updateNavBadges(); });
+  requestAnimationFrame(()=>{ moveNavPill(); updateNavBadges(); animatePanel('Home'); });
   enableSwipe('debtList',(id)=>{
     modal('Удалить долг?','Запись будет удалена.','Удалить',
       ()=>{ debts=debts.filter(x=>x.id!==id); saveDebts(); renderDebt(); },
