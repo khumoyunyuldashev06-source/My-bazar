@@ -97,6 +97,7 @@
   .bd-head { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
   .bd-name { font-size:13px; font-weight:700; color:#e8ddcc; }
   .bd-val { margin-left:auto; font-size:14px; font-weight:800; color:#fff; }
+  .bd-share { font-size:12px; font-weight:700; color:rgba(255,255,255,.65); margin-left:5px; }
   .bd-track { height:7px; background:rgba(255,255,255,.12); border-radius:5px; overflow:hidden; }
   .bd-fill { height:100%; border-radius:5px; transition:width .5s ease; }
   .save-bazar { margin-top:14px; width:100%; background:rgba(255,255,255,.14); color:#fff; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
@@ -180,7 +181,8 @@
   .stepper input { width:50px; text-align:center; background:var(--bg); border:1.5px solid transparent; border-radius:11px; color:var(--ink); font-size:17px; font-weight:800; padding:9px 2px; outline:none; font-family:inherit; }
   .stepper input:focus { border-color:var(--accent); background:#fff; }
 
-  .empty { text-align:center; color:var(--muted); padding:52px 24px; font-size:15px; line-height:1.7; font-weight:500; }
+  .empty { text-align:center; color:var(--muted); padding:48px 24px; font-size:14.5px; line-height:1.65; font-weight:500; }
+  .empty::before { content:""; display:block; width:56px; height:56px; margin:0 auto 16px; border-radius:18px; background:var(--bg2); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24' fill='none' stroke='%23b8b3ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z'/%3E%3Cpath d='M9 10 12 3l3 7'/%3E%3Cpath d='M3 10h18'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:center; }
   .empty::first-line { font-size:19px; font-weight:800; line-height:2.4; }
   .actions { display:flex; gap:10px; margin-top:18px; }
   .actions button { flex:1; background:var(--card); border:none; color:var(--ink); border-radius:13px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; box-shadow:var(--shadow); transition:.12s; }
@@ -717,7 +719,9 @@
   .plan-sum-in { font-size:13.5px; font-weight:800; color:var(--accent); margin-top:3px; font-variant-numeric:tabular-nums; }
   .plan-item .plan-del { margin-left:4px; }
   /* --- Калькулятор: плавающая кнопка + шторка --- */
-  .calc-fab { position:fixed; right:16px; bottom:calc(112px + env(safe-area-inset-bottom)); width:52px; height:52px; border-radius:50%; border:none; background:var(--grad); color:#fff; font-size:22px; cursor:pointer; z-index:60; box-shadow:0 8px 20px rgba(255,77,13,.4), 0 16px 40px rgba(14,14,16,.18); transition:transform .18s var(--ease), opacity .2s; }
+  .calc-fab { position:fixed; right:16px; bottom:calc(112px + env(safe-area-inset-bottom)); width:52px; height:52px; border-radius:50%; border:none; background:var(--grad); color:#fff; font-size:22px; cursor:pointer; z-index:60; box-shadow:0 8px 20px rgba(255,77,13,.4), 0 16px 40px rgba(14,14,16,.18); transition:transform .18s var(--ease), opacity .3s ease; }
+  .calc-fab.dimmed { opacity:.35; }
+  .calc-fab:active { transform:scale(.9); opacity:1; }
   .calc-head { display:flex; align-items:center; justify-content:space-between; padding:0 4px 4px; }
   .calc-title { font-size:15px; font-weight:800; color:var(--muted); }
   .calc-x { width:34px; height:34px; border-radius:50%; border:none; background:var(--bg2); color:var(--ink); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -853,19 +857,20 @@
   .line-chart-svg { width:100%; height:auto; overflow:visible; }
   .lc-grid { stroke:var(--line); stroke-width:1; }
   .lc-lbl { fill:var(--muted); font-size:9px; font-weight:600; }
-  /* --- Сканер штрихкодов --- */
-  .scan-btn { flex-shrink:0; width:38px; height:38px; border:none; background:var(--soft); color:var(--accent); border-radius:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-left:6px; }
-  .scan-btn:active { transform:scale(.9); }
-  .scan-modal { position:fixed; inset:0; z-index:100; background:#000; display:none; flex-direction:column; }
-  .scan-modal.show { display:flex; }
-  .scan-modal video { width:100%; height:100%; object-fit:cover; }
-  .scan-modal #scanReader { width:100%; height:100%; }
-  .scan-modal #scanReader video { width:100% !important; height:100% !important; object-fit:cover !important; }
-  .scan-frame { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; max-width:280px; aspect-ratio:1.5; border:3px solid rgba(255,255,255,.9); border-radius:16px; pointer-events:none; z-index:2; }
-  .scan-line { position:absolute; left:0; right:0; height:2px; background:var(--accent); box-shadow:0 0 12px var(--accent); animation:scanMove 2s ease-in-out infinite; }
-  @keyframes scanMove { 0%,100%{top:6%} 50%{top:94%} }
-  .scan-close { position:absolute; top:calc(16px + env(safe-area-inset-top)); right:16px; z-index:2; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); backdrop-filter:blur(10px); border:none; color:#fff; font-size:20px; cursor:pointer; }
-  .scan-hint { position:absolute; bottom:calc(40px + env(safe-area-inset-bottom)); left:0; right:0; text-align:center; color:#fff; font-size:15px; font-weight:600; padding:0 30px; text-shadow:0 1px 4px rgba(0,0,0,.6); }
+  /* --- Анимация появления карточек (stagger) --- */
+  @keyframes cardIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  .panel.active .buy-item, .panel.active .cat-item, .panel.active .plan-item,
+  .panel.active .home-rec {
+    animation:cardIn .4s cubic-bezier(.32,.72,0,1) both;
+  }
+  .panel.active .buy-item:nth-child(1),.panel.active .cat-item:nth-child(1),.panel.active .home-rec:nth-child(1){animation-delay:.03s}
+  .panel.active .buy-item:nth-child(2),.panel.active .cat-item:nth-child(2),.panel.active .home-rec:nth-child(2){animation-delay:.06s}
+  .panel.active .buy-item:nth-child(3),.panel.active .cat-item:nth-child(3),.panel.active .home-rec:nth-child(3){animation-delay:.09s}
+  .panel.active .buy-item:nth-child(4),.panel.active .cat-item:nth-child(4),.panel.active .home-rec:nth-child(4){animation-delay:.12s}
+  .panel.active .buy-item:nth-child(5),.panel.active .cat-item:nth-child(5),.panel.active .home-rec:nth-child(5){animation-delay:.15s}
+  .panel.active .buy-item:nth-child(n+6),.panel.active .cat-item:nth-child(n+6){animation-delay:.17s}
+  @media (prefers-reduced-motion:reduce){ .panel.active .buy-item,.panel.active .cat-item,.panel.active .plan-item,.panel.active .home-rec{ animation:none !important; } }
+
   /* --- Фото товара --- */
   .buy-photo { width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; margin-right:2px; }
   .plan-photo { width:38px; height:38px; border-radius:10px; object-fit:cover; flex-shrink:0; }
@@ -951,7 +956,6 @@
   .ptr.spin .ptr-spin { animation:ptrSpin .7s linear infinite; }
   @keyframes ptrSpin { to { transform:rotate(360deg); } }
 </style>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
   <div class="ptr" id="ptr"><svg class="ptr-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg></div>
@@ -1069,7 +1073,7 @@
         <button id="resetBtnTop" data-ru="Сбросить"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 20v-4h4"/></svg><span>Сбросить</span></button>
       </div>
     </div>
-    <div class="search-box"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="scan-btn" id="scanBtn" title="Сканер"><svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg></button><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
+    <div class="search-box"><span class="search-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><input type="text" id="buySearchInput" placeholder="Поиск товара на базаре..." data-ru="Поиск товара на базаре..."><button class="search-clear" id="buySearchClear" style="display:none">×</button></div>
     <div class="buy-filter" id="buyFilter">
       <button data-bf="active" class="active" data-ru="В закупке">В закупке</button>
       <button data-bf="all" data-ru="Все товары">Все товары</button>
@@ -1331,12 +1335,6 @@
   <input type="file" id="photoInput" accept="image/*" style="display:none">
   <div class="photo-zoom" id="photoZoom"><img id="photoZoomImg" src=""></div>
 
-  <div class="scan-modal" id="scanModal">
-    <button class="scan-close" id="scanClose">✕</button>
-    <div id="scanReader" style="width:100%;height:100%"></div>
-    <div class="scan-frame"><div class="scan-line"></div></div>
-    <div class="scan-hint" id="scanHint">Наведи камеру на штрихкод</div>
-  </div>
 
   <button class="calc-fab" id="calcFab" title="Калькулятор"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h4"/></svg></button>
 
@@ -1763,15 +1761,17 @@
     catalog.forEach(it=>{ const q=qty[it.id]||0; if(q>0)byCat[it.cat]=(byCat[it.cat]||0)+it.price*q; });
     const present=CATS_LIST().filter(c=>byCat[c]>0);
     if(!present.length){ wrap.innerHTML=''; return; }
+    const grand=present.reduce((s,c)=>s+byCat[c],0);
     const max=Math.max(...present.map(c=>byCat[c]));
     let rows='';
-    present.forEach(cat=>{
+    present.sort((a,b)=>byCat[b]-byCat[a]).forEach(cat=>{
       const v=byCat[cat], m=META(cat);
-      const pct=Math.round(v/max*100);
+      const share=Math.round(v/grand*100);       // доля в общем базаре — для подписи
+      const barW=Math.round(v/max*100);          // ширина относительно крупнейшего — для наглядности
       rows+=`<div class="bd-row"><div class="bd-head">
         <span class="bd-name">${m.icon} ${cat}</span>
-        <span class="bd-val">${fmt(v)} сум</span></div>
-        <div class="bd-track"><div class="bd-fill" style="width:${pct}%;background:${m.color}"></div></div></div>`;
+        <span class="bd-val">${fmt(v)} <span class="bd-share">${share}%</span></span></div>
+        <div class="bd-track"><div class="bd-fill" style="width:${barW}%"></div></div></div>`;
     });
     wrap.innerHTML=`<div class="bd-wrap">${rows}</div>`;
   }
@@ -3356,54 +3356,6 @@
     await applyLogin(cloudTgId);
   });
 
-  // ===== Сканер штрихкодов (html5-qrcode, работает на iPhone) =====
-  let html5Scanner=null;
-  async function openScan(){
-    if(typeof Html5Qrcode==='undefined'){
-      modal('Сканер не загрузился','Нужен интернет, чтобы загрузить сканер. Проверь соединение и попробуй снова.','Ок',null,true);
-      return;
-    }
-    $('scanModal').classList.add('show');
-    try{
-      html5Scanner=new Html5Qrcode('scanReader',{
-        formatsToSupport:[
-          Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.QR_CODE
-        ]
-      });
-      await html5Scanner.start(
-        {facingMode:'environment'},
-        {fps:10, qrbox:{width:250,height:160}, aspectRatio:1.0},
-        (decodedText)=>{ onScanned(decodedText); },
-        ()=>{}
-      );
-    }catch(e){
-      closeScan();
-      modal('Камера недоступна','Разреши доступ к камере в настройках браузера, чтобы пользоваться сканером.','Ок',null,true);
-    }
-  }
-  async function closeScan(){
-    $('scanModal').classList.remove('show');
-    if(html5Scanner){
-      try{ await html5Scanner.stop(); html5Scanner.clear(); }catch(e){}
-      html5Scanner=null;
-    }
-  }
-  function onScanned(code){
-    closeScan();
-    const found=catalog.find(it=>it.barcode===code);
-    if(found){
-      qty[found.id]=(qty[found.id]||0)+1; saveQty(); renderBuy();
-      switchTab('Buy');
-      modal('Товар найден','«'+found.name+'» добавлен в закупку (+1).','Ок',null,true);
-    } else {
-      modal('Штрихкод '+code,'Такого штрихкода нет в каталоге. Открой товар в Каталоге и привяжи этот код через ✎, тогда сканер будет его узнавать.','Ок',null,true);
-    }
-  }
-  if($('scanBtn'))$('scanBtn').addEventListener('click',openScan);
-  if($('scanClose'))$('scanClose').addEventListener('click',closeScan);
 
   // ===== Калькулятор =====
   let calcExpr='';
@@ -3431,6 +3383,14 @@
     $('calcOut').textContent=r===null?(calcExpr?'…':'0'):calcFmtNum(r);
   }
   $('calcFab').addEventListener('click',()=>{ $('calcSheet').classList.add('show'); calcRender(); });
+  // калькулятор тускнеет во время скролла, чтобы не мешать
+  let calcScrollTimer=null;
+  window.addEventListener('scroll',()=>{
+    const fab=$('calcFab'); if(!fab)return;
+    fab.classList.add('dimmed');
+    clearTimeout(calcScrollTimer);
+    calcScrollTimer=setTimeout(()=>fab.classList.remove('dimmed'),600);
+  },{passive:true});
   $('calcClose').addEventListener('click',()=>$('calcSheet').classList.remove('show'));
   $('calcSheet').addEventListener('click',e=>{ if(e.target===$('calcSheet'))$('calcSheet').classList.remove('show'); });
   $('calcKeys').addEventListener('click',e=>{
