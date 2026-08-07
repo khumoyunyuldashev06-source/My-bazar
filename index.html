@@ -909,6 +909,20 @@
   .ctx-item.danger { color:#ff3b30; }
   .ctx-backdrop { position:fixed; inset:0; z-index:109; background:rgba(14,14,16,.15); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); opacity:0; transition:opacity .2s; }
   .ctx-backdrop.show { opacity:1; }
+  /* --- AI-инсайты --- */
+  .ai-card { background:var(--card); border-radius:18px; padding:14px 16px; margin-bottom:14px; box-shadow:var(--shadow-1); border:1px solid var(--line); }
+  .ai-head { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
+  .ai-head .ai-spark { width:20px; height:20px; border-radius:7px; background:var(--grad); display:flex; align-items:center; justify-content:center; }
+  .ai-item { display:flex; align-items:flex-start; gap:11px; padding:10px 0; border-top:1px solid var(--line); }
+  .ai-item:first-of-type { border-top:none; }
+  .ai-dot { width:32px; height:32px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .ai-dot svg { width:17px; height:17px; }
+  .ai-txt { flex:1; font-size:14px; font-weight:600; color:var(--ink); line-height:1.4; }
+  .ai-txt b { font-weight:800; }
+  .ai-i-good .ai-dot { background:rgba(46,196,107,.14); color:#2ec46b; }
+  .ai-i-warn .ai-dot { background:rgba(255,159,10,.14); color:#ff9f0a; }
+  .ai-i-bad .ai-dot { background:rgba(255,59,48,.14); color:#ff3b30; }
+  .ai-i-info .ai-dot { background:rgba(94,120,255,.14); color:#5e78ff; }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -1008,7 +1022,7 @@
   <header>
     <div class="title-row">
       <div class="basket"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
-      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v11</span></h1></div>
+      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v13</span></h1></div>
       <div class="sync-badge" id="syncBadge" title="Синхронизация"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6.5 19z"/></svg></div>
     </div>
   </header>
@@ -1033,6 +1047,7 @@
       <div class="home-hero-sub" id="homeHeroSub"></div>
       <div class="home-today" id="homeToday"></div>
     </div>
+    <div id="aiInsights"></div>
     <div class="home-grid">
       <button class="home-widget" id="hwBazar">
         <div class="hw-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
@@ -1544,8 +1559,13 @@
     try{
       const tg=window.Telegram&&window.Telegram.WebApp;
       if(tg){ tg.ready&&tg.ready(); tg.expand&&tg.expand();
+        // тянемся на весь экран, отключаем закрытие свайпом (чтобы не закрыть случайно)
+        try{ tg.disableVerticalSwipes&&tg.disableVerticalSwipes(); }catch(e){}
+        try{ tg.setHeaderColor&&tg.setHeaderColor('#ff4e0d'); }catch(e){}
         const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
         if(u&&u.id) cloudTgId='tg_'+u.id;
+        // если Telegram в тёмной теме — включаем тёмную тему приложения
+        try{ if(tg.colorScheme==='dark')document.documentElement.setAttribute('data-theme','dark'); }catch(e){}
       }
     }catch(e){}
   })();
@@ -1785,16 +1805,36 @@
     container.addEventListener('mouseup',cancel);
     container.addEventListener('mouseleave',cancel);
   }
-  // тактильная отдача (вибрация) — Apple-стиль
+  // тактильная отдача — Telegram Haptic API (в Telegram) или Web Vibration (в PWA)
   function haptic(type){
+    const tg=window.Telegram&&window.Telegram.WebApp;
+    if(tg&&tg.HapticFeedback){
+      try{
+        if(type==='success'||type==='warning'||type==='error')tg.HapticFeedback.notificationOccurred(type==='error'?'error':type);
+        else tg.HapticFeedback.impactOccurred(type==='heavy'?'heavy':type==='medium'?'medium':'light');
+        return;
+      }catch(e){}
+    }
     if(!navigator.vibrate)return;
     const p={light:8, medium:15, heavy:[10,30,10], success:[8,40,8], warning:[20,60,20]};
     try{ navigator.vibrate(p[type]||8); }catch(e){}
   }
-  // глобально: лёгкая вибрация на всех кнопках
-  document.addEventListener('click',e=>{
-    if(e.target.closest('button,.qa-btn,.home-widget,.more-row,.stepper button')) haptic('light');
-  },{passive:true});
+  // анимированный счётчик — цифры плавно накручиваются
+  function animateCount(el, target, suffix){
+    if(!el)return;
+    const from=el._cv||0;
+    if(from===target){ el.textContent=fmt(target)+(suffix||''); return; }
+    const dur=650, start=performance.now();
+    el._cv=target;
+    function step(now){
+      const p=Math.min((now-start)/dur,1);
+      const eased=1-Math.pow(1-p,3); // ease-out cubic
+      const val=Math.round(from+(target-from)*eased);
+      el.textContent=fmt(val)+(suffix||'');
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
   // умный поиск: Fuse.js (с опечатками) + fallback на includes
   function smartFilter(items, query, keys){
     const q=(query||'').trim();
@@ -2147,6 +2187,7 @@
   $('price').addEventListener('keydown',e=>{if(e.key==='Enter')submitProduct();});
 
   $('ctxBackdrop').addEventListener('click',hideCtxMenu);
+  try{
   attachLongPress($('catGroups'),(id)=>{
     const it=catalog.find(c=>c.id===id); if(!it)return[];
     return [
@@ -2155,6 +2196,7 @@
       {label:'Удалить', icon:ICON.trash, danger:true, action:()=>{ modal('Удалить товар?',`«${it.name}» будет удалён.`,'Удалить',()=>{ catalog=catalog.filter(c=>c.id!==id); delete qty[id]; saveCat(); saveQty(); renderCat(); renderBuy(); }); }}
     ];
   });
+  }catch(e){}
   $('catGroups').addEventListener('click',e=>{
     const ph=e.target.closest('[data-pricehist]');
     if(ph){ const it=catalog.find(c=>c.id===ph.dataset.pricehist); if(it)showPriceHist(it); return; }
@@ -3284,6 +3326,57 @@
     else { b.textContent=''; b.classList.remove('show'); }
   }
   window.addEventListener('resize',moveNavPill);
+  // ===== AI-инсайты (умный анализ на правилах) =====
+  const AI_IC={
+    up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>',
+    down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 8"/><path d="M17 17h4v-4"/></svg>',
+    box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2m18 0-9 5-9-5m18 0v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/></svg>',
+    debt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19l1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+    ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+  };
+  function renderAIInsights(rev,buy,oth){
+    const box=$('aiInsights'); if(!box)return;
+    const ins=[];
+    // 1) сравнение выручки с средней за прошлые месяцы
+    const byMonth={};
+    revenue.forEach(r=>{ const d=new Date(r.date); const k=d.getFullYear()+'-'+d.getMonth(); byMonth[k]=(byMonth[k]||0)+r.amount; });
+    const now=new Date(); const curK=now.getFullYear()+'-'+now.getMonth();
+    const past=Object.entries(byMonth).filter(([k])=>k!==curK).map(([,v])=>v);
+    if(past.length>=1 && rev>0){
+      const avg=past.reduce((s,v)=>s+v,0)/past.length;
+      if(avg>0){
+        const diff=Math.round((rev-avg)/avg*100);
+        if(diff<=-10)ins.push({t:'bad',ic:AI_IC.down,html:`Выручка в этом месяце на <b>${Math.abs(diff)}% ниже</b> средней`});
+        else if(diff>=10)ins.push({t:'good',ic:AI_IC.up,html:`Выручка на <b>${diff}% выше</b> средней — отличный месяц!`});
+      }
+    }
+    // 2) просроченные/крупные долги
+    const owe=debts.filter(d=>d.type==='owe'&&!d.done);
+    if(owe.length){
+      const sum=owe.reduce((s,d)=>s+debtRemaining(d),0);
+      ins.push({t:'bad',ic:AI_IC.debt,html:`Ты должен <b>${fmt(sum)} сум</b> — ${owe.length} ${owe.length===1?'долг':'долгов'} не закрыто`});
+    }
+    // 3) самый прибыльный товар (по обороту в истории)
+    const prodCount={};
+    hist.forEach(h=>(h.items||[]).forEach(it=>{ prodCount[it.name]=(prodCount[it.name]||0)+(it.price*it.qty); }));
+    const topProd=Object.entries(prodCount).sort((a,b)=>b[1]-a[1])[0];
+    if(topProd&&topProd[1]>0)ins.push({t:'good',ic:AI_IC.star,html:`Больше всего оборота даёт <b>${esc(topProd[0])}</b>`});
+    // 4) прибыль положительная/отрицательная
+    const profit=rev-buy-oth;
+    if(rev>0||buy>0){
+      if(profit>0)ins.push({t:'good',ic:AI_IC.up,html:`Прибыль за месяц <b>+${fmt(profit)} сум</b> — бизнес в плюсе`});
+      else if(profit<0)ins.push({t:'warn',ic:AI_IC.down,html:`Расходы превышают выручку на <b>${fmt(Math.abs(profit))} сум</b>`});
+    }
+    // 5) товары в плане, но не куплены (напоминание)
+    if(plan.length>0){ const ps=planSum(); if(ps>0)ins.push({t:'info',ic:AI_IC.box,html:`В плане закупки на <b>${fmt(ps)} сум</b> — не забудь купить`}); }
+    // если нет данных
+    if(!ins.length){ box.innerHTML=''; return; }
+    box.innerHTML=`<div class="ai-card">
+      <div class="ai-head"><span class="ai-spark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 10l-4.9 3.6L16 20l-4-3.5L8 20l.9-6.4L4 10l6.1-1.2z"/></svg></span>Аналитика</div>
+      ${ins.slice(0,5).map(i=>`<div class="ai-item ai-i-${i.t}"><span class="ai-dot">${i.ic}</span><span class="ai-txt">${i.html}</span></div>`).join('')}
+    </div>`;
+  }
   // ===== Главная: дашборд =====
   function renderHome(){
     // приветствие
@@ -3317,11 +3410,12 @@
           ${tExp>0?`<span class="ht-out">−${fmt(tExp)}</span>`:''}`;
       } else te.style.display='none';
     }
-    // виджеты
-    $('hwBazarVal').textContent=fmt(total());
-    $('hwDebtVal').textContent=fmt(debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+debtRemaining(d),0));
-    $('hwPhoneVal').textContent=fmt(phone.filter(p=>inM(p.date)).reduce((s,p)=>s+p.amount,0));
-    $('hwPlanVal').textContent=fmt(planSum());
+    // виджеты (анимированные счётчики)
+    animateCount($('hwBazarVal'), total());
+    animateCount($('hwDebtVal'), debts.filter(d=>d.type==='owe'&&!d.done).reduce((s,d)=>s+debtRemaining(d),0));
+    animateCount($('hwPhoneVal'), phone.filter(p=>inM(p.date)).reduce((s,p)=>s+p.amount,0));
+    animateCount($('hwPlanVal'), planSum());
+    renderAIInsights(rev,buy,oth);
     // последние операции (все типы, свежие сверху)
     const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
     const ev=[];
