@@ -945,6 +945,31 @@
   /* снег */
   .w-snow::after { content:"❄"; position:absolute; font-size:8px; color:#a8c8e8; bottom:1px; left:9px; animation:wSnow 1.5s linear infinite; }
   @keyframes wSnow { 0%{ transform:translateY(-3px); opacity:0; } 40%{ opacity:1; } 100%{ transform:translateY(5px); opacity:0; } }
+  /* --- AI-помощник --- */
+  .ai-row .ai-mr-ic { background:var(--grad) !important; color:#fff !important; }
+  .ai-badge { font-size:9px; font-weight:800; color:#fff; background:var(--grad); padding:2px 6px; border-radius:6px; letter-spacing:.05em; margin-left:auto; margin-right:8px; }
+  .ai-screen { position:fixed; inset:0; z-index:95; background:var(--bg); display:none; flex-direction:column; padding-top:env(safe-area-inset-top); }
+  .ai-screen.show { display:flex; animation:panelIn .3s var(--ease); }
+  .ai-top { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--card); }
+  .ai-back, .ai-key-btn { width:38px; height:38px; border:none; background:var(--bg2); border-radius:11px; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ai-top-title { flex:1; display:flex; align-items:center; gap:8px; font-size:17px; font-weight:800; }
+  .ai-top-spark { width:24px; height:24px; border-radius:8px; background:var(--grad); display:flex; align-items:center; justify-content:center; }
+  .ai-msgs { flex:1; overflow-y:auto; padding:16px 14px; display:flex; flex-direction:column; gap:12px; }
+  .ai-msg { max-width:82%; padding:12px 15px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:500; }
+  .ai-msg.user { align-self:flex-end; background:var(--grad); color:#fff; border-bottom-right-radius:6px; }
+  .ai-msg.bot { align-self:flex-start; background:var(--card); color:var(--ink); border:1px solid var(--line); border-bottom-left-radius:6px; box-shadow:var(--shadow-1); }
+  .ai-msg.bot b { font-weight:800; }
+  .ai-typing { align-self:flex-start; display:flex; gap:4px; padding:14px 16px; background:var(--card); border:1px solid var(--line); border-radius:18px; }
+  .ai-typing span { width:7px; height:7px; border-radius:50%; background:var(--muted); animation:aiTyp 1.2s infinite; }
+  .ai-typing span:nth-child(2){ animation-delay:.2s; } .ai-typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes aiTyp { 0%,60%,100%{ opacity:.3; transform:translateY(0); } 30%{ opacity:1; transform:translateY(-3px); } }
+  .ai-suggest { display:flex; flex-wrap:wrap; gap:8px; padding:0 2px; }
+  .ai-chip { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:9px 13px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer; font-family:inherit; }
+  .ai-chip:active { transform:scale(.96); }
+  .ai-input-bar { display:flex; gap:9px; padding:12px 14px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--card); }
+  .ai-input-bar input { flex:1; background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:13px 15px; font-size:15px; color:var(--ink); font-family:inherit; outline:none; }
+  .ai-send { width:46px; height:46px; flex-shrink:0; border:none; background:var(--grad); color:#fff; border-radius:14px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .ai-send:active { transform:scale(.9); }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -1044,7 +1069,7 @@
   <header>
     <div class="title-row">
       <div class="basket"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
-      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v16</span></h1></div>
+      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v18</span></h1></div>
       <div class="sync-badge" id="syncBadge" title="Синхронизация"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6.5 19z"/></svg></div>
     </div>
   </header>
@@ -1112,6 +1137,9 @@
 
   <div class="panel" id="panelMore">
     <div class="more-title" data-ru="Ещё">Ещё</div>
+    <div class="more-group">
+      <button class="more-row ai-row" id="aiBtn"><span class="mr-ic ai-mr-ic"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 10l-4.9 3.6L16 20l-4-3.5L8 20l.9-6.4L4 10l6.1-1.2z"/></svg></span><span data-ru="AI-помощник">AI-помощник</span><span class="ai-badge">NEW</span><span class="mr-arr"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+    </div>
     <div class="more-group">
       <button class="more-row" id="moreHist"><span class="mr-ic"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span data-ru="История базаров">История базаров</span><span class="mr-arr"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
       <button class="more-row" id="moreMon"><span class="mr-ic"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/></svg></span><span data-ru="Монитор">Монитор</span><span class="mr-arr"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
@@ -1441,6 +1469,19 @@
         <button data-k="000">000</button><button data-k="0">0</button><button data-k=".">,</button>
         <button data-k="=" class="ck-eq">=</button>
       </div>
+    </div>
+  </div>
+
+  <div class="ai-screen" id="aiScreen">
+    <div class="ai-top">
+      <button class="ai-back" id="aiBack"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="ai-top-title"><span class="ai-top-spark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 10l-4.9 3.6L16 20l-4-3.5L8 20l.9-6.4L4 10l6.1-1.2z"/></svg></span>AI-помощник</div>
+      <button class="ai-key-btn" id="aiKeyBtn"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></button>
+    </div>
+    <div class="ai-msgs" id="aiMsgs"></div>
+    <div class="ai-input-bar">
+      <input type="text" id="aiInput" placeholder="Спроси о своём бизнесе..." data-ru="Спроси о своём бизнесе...">
+      <button class="ai-send" id="aiSend"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg></button>
     </div>
   </div>
 
@@ -1900,6 +1941,11 @@
   $('modalBg').addEventListener('click',e=>{ if(e.target===$('modalBg'))closeModal(); });
   $('modalOk').addEventListener('click',()=>{ pendingCancel=null; if(pendingAction)pendingAction(); $('modalBg').classList.remove('show'); pendingAction=null; $('modalCancel').style.display=''; $('modalOk').style.display=''; $('modalCancel').textContent='Отмена'; });
 
+  // ввод текста через модалку с полем
+  function modalInput(title,text,current,fn){
+    const val=prompt(text, current||'');
+    if(val!==null)fn(val);
+  }
   function renderCompare(){
     const wrap=$('compareWrap'); const t=total();
     if(!hist.length||t<=0){ wrap.innerHTML=''; return; }
@@ -3371,6 +3417,7 @@
       const code=d.current.weather_code;
       const [cls,txt]=WCODE[code]||['cloud','—'];
       const el=$('weather'); if(!el)return;
+      _wLast=Date.now();
       el.innerHTML=`<div class="w-ic">${wIcon(cls)}</div><span class="w-temp">${t>0?'+':''}${t}°</span><span class="w-sep">·</span><span>${txt}</span>${cityName?`<span class="w-city">${cityName}</span>`:''}`;
       requestAnimationFrame(()=>el.classList.add('show'));
     }catch(e){}
@@ -3379,12 +3426,121 @@
     // пробуем геолокацию, иначе Ташкент
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(
-        pos=>loadWeather(pos.coords.latitude, pos.coords.longitude, ''),
-        ()=>loadWeather(41.31, 69.24, 'Ташкент'),
+        pos=>{ _wLat=pos.coords.latitude; _wLon=pos.coords.longitude; _wCity=''; loadWeather(_wLat,_wLon,_wCity); },
+        ()=>{ _wLat=41.31; _wLon=69.24; _wCity='Ташкент'; loadWeather(_wLat,_wLon,_wCity); },
         {timeout:5000, maximumAge:1800000}
       );
-    } else loadWeather(41.31, 69.24, 'Ташкент');
+    } else { _wLat=41.31; _wLon=69.24; _wCity='Ташкент'; loadWeather(_wLat,_wLon,_wCity); }
   }
+  let _wLat=null,_wLon=null,_wCity='',_wLast=0;
+  function refreshWeather(){
+    if(_wLat==null)return;
+    // не чаще раза в 10 минут
+    if(Date.now()-_wLast<600000)return;
+    _wLast=Date.now();
+    loadWeather(_wLat,_wLon,_wCity);
+  }
+  // автообновление раз в 30 минут пока открыто
+  setInterval(refreshWeather,1800000);
+  // обновление при возврате в приложение (свернул-развернул)
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden)refreshWeather(); });
+
+  // ===== AI-помощник (Claude API) =====
+  const AI_KEY_STORE='bazar_ai_key';
+  let aiHistory=[];
+  function aiGetKey(){ try{ return localStorage.getItem(AI_KEY_STORE)||''; }catch(e){ return ''; } }
+  function aiSetKey(k){ try{ localStorage.setItem(AI_KEY_STORE,k); }catch(e){} }
+  function openAI(){
+    $('aiScreen').classList.add('show');
+    if(!aiHistory.length)aiWelcome();
+    if(!aiGetKey())aiAskKey();
+  }
+  function closeAI(){ $('aiScreen').classList.remove('show'); }
+  function aiAskKey(){
+    const cur=aiGetKey();
+    modalInput('API-ключ Claude','Вставь свой ключ (начинается с sk-ant-). Он хранится только на твоём телефоне.', cur, (val)=>{
+      if(val&&val.trim()){ aiSetKey(val.trim()); aiBotMsg('Ключ сохранён ✓ Теперь спрашивай что угодно о своём бизнесе.'); }
+    });
+  }
+  function aiWelcome(){
+    $('aiMsgs').innerHTML='';
+    aiBotMsg('Привет! Я AI-помощник твоего бизнеса. Могу проанализировать продажи, долги, закупки и дать совет. Спроси меня:');
+    const chips=['Сколько я заработал в этом месяце?','Кто должен мне больше всего?','Что стоит закупить?','Какой товар самый прибыльный?'];
+    const wrap=document.createElement('div'); wrap.className='ai-suggest';
+    wrap.innerHTML=chips.map(c=>`<button class="ai-chip">${c}</button>`).join('');
+    wrap.querySelectorAll('.ai-chip').forEach(b=>b.addEventListener('click',()=>{ $('aiInput').value=b.textContent; aiAsk(); }));
+    $('aiMsgs').appendChild(wrap);
+  }
+  function aiUserMsg(t){ const d=document.createElement('div'); d.className='ai-msg user'; d.textContent=t; $('aiMsgs').appendChild(d); $('aiMsgs').scrollTop=1e9; }
+  function aiBotMsg(t){ const d=document.createElement('div'); d.className='ai-msg bot'; d.innerHTML=t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'); $('aiMsgs').appendChild(d); $('aiMsgs').scrollTop=1e9; return d; }
+  function aiTyping(){ const d=document.createElement('div'); d.className='ai-typing'; d.innerHTML='<span></span><span></span><span></span>'; $('aiMsgs').appendChild(d); $('aiMsgs').scrollTop=1e9; return d; }
+  // собираем сводку данных бизнеса для AI
+  function aiBusinessContext(){
+    const cut=(()=>{ const c=new Date(); c.setDate(1); c.setHours(0,0,0,0); return c; })();
+    const inM=d=>new Date(d)>=cut;
+    const rev=revenue.filter(r=>inM(r.date)).reduce((s,r)=>s+r.amount,0);
+    const buy=hist.filter(h=>inM(h.date)).reduce((s,h)=>s+h.total,0);
+    const oth=expenses.filter(x=>inM(x.date)).reduce((s,x)=>s+x.amount,0);
+    const ph=phone.filter(p=>inM(p.date)).reduce((s,p)=>s+p.amount,0);
+    const owe=debts.filter(d=>d.type==='owe'&&!d.done).map(d=>({кому:d.who||'?',сумма:debtRemaining(d)}));
+    const owed=debts.filter(d=>d.type==='owed'&&!d.done).map(d=>({кто:d.who||'?',сумма:debtRemaining(d)}));
+    const prodCount={};
+    hist.forEach(h=>(h.items||[]).forEach(it=>{ prodCount[it.name]=(prodCount[it.name]||0)+(it.price*it.qty); }));
+    const topProds=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>({товар:n,оборот:v}));
+    return {
+      месяц:{выручка:rev,телефон:ph,закупки:buy,расходы:oth,прибыль:rev+ph-buy-oth},
+      каталог_товаров:catalog.length,
+      всего_базаров:hist.length,
+      я_должен:owe, мне_должны:owed,
+      топ_товары_по_обороту:topProds,
+      план_закупки:planSum()
+    };
+  }
+  async function aiAsk(){
+    const q=$('aiInput').value.trim(); if(!q)return;
+    const key=aiGetKey();
+    if(!key){ aiAskKey(); return; }
+    // убираем чипы-подсказки
+    const sug=$('aiMsgs').querySelector('.ai-suggest'); if(sug)sug.remove();
+    $('aiInput').value=''; aiUserMsg(q); haptic('light');
+    const typ=aiTyping();
+    try{
+      const ctx=aiBusinessContext();
+      const sys=`Ты — AI-помощник для владельца магазина на базаре в Узбекистане. Отвечай кратко, по-русски, дружелюбно и практично. Суммы в узбекских сумах (сум). Вот текущие данные бизнеса в JSON:\n${JSON.stringify(ctx)}\nОтвечай только на основе этих данных. Если данных не хватает — честно скажи. Используй **жирный** для важных цифр.`;
+      const msgs=aiHistory.concat([{role:'user',content:q}]);
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':key,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify({ model:'claude-3-5-haiku-20241022', max_tokens:600, system:sys, messages:msgs })
+      });
+      typ.remove();
+      if(!resp.ok){
+        const err=await resp.text();
+        if(resp.status===401)aiBotMsg('Ключ неверный или отозван. Нажми на иконку ключа вверху и вставь правильный ключ.');
+        else if(resp.status===429)aiBotMsg('Слишком много запросов или закончился баланс. Проверь счёт на console.anthropic.com.');
+        else aiBotMsg('Ошибка: '+resp.status+'. Попробуй ещё раз.');
+        return;
+      }
+      const data=await resp.json();
+      const txt=(data.content&&data.content[0]&&data.content[0].text)||'Пустой ответ.';
+      aiBotMsg(txt);
+      aiHistory.push({role:'user',content:q},{role:'assistant',content:txt});
+      if(aiHistory.length>12)aiHistory=aiHistory.slice(-12); // помним последние 6 обменов
+    }catch(e){
+      typ.remove();
+      aiBotMsg('Не удалось связаться с AI. Проверь интернет и попробуй снова.');
+    }
+  }
+  if($('aiBtn'))$('aiBtn').addEventListener('click',openAI);
+  if($('aiBack'))$('aiBack').addEventListener('click',closeAI);
+  if($('aiKeyBtn'))$('aiKeyBtn').addEventListener('click',aiAskKey);
+  if($('aiSend'))$('aiSend').addEventListener('click',aiAsk);
+  if($('aiInput'))$('aiInput').addEventListener('keydown',e=>{ if(e.key==='Enter')aiAsk(); });
 
   // ===== AI-инсайты (умный анализ на правилах) =====
   const AI_IC={
