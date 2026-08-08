@@ -923,6 +923,28 @@
   .ai-i-warn .ai-dot { background:rgba(255,159,10,.14); color:#ff9f0a; }
   .ai-i-bad .ai-dot { background:rgba(255,59,48,.14); color:#ff3b30; }
   .ai-i-info .ai-dot { background:rgba(94,120,255,.14); color:#5e78ff; }
+  /* --- Погода --- */
+  .weather { display:inline-flex; align-items:center; gap:9px; margin-top:10px; padding:7px 13px 7px 9px; background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-1); font-size:14px; font-weight:700; color:var(--ink); opacity:0; transform:translateY(6px); transition:opacity .5s var(--ease), transform .5s var(--ease); }
+  .weather.show { opacity:1; transform:none; }
+  .weather .w-temp { font-variant-numeric:tabular-nums; font-weight:800; }
+  .weather .w-city { color:var(--muted); font-weight:600; font-size:12.5px; }
+  .weather .w-sep { color:var(--line); }
+  .w-ic { width:26px; height:26px; flex-shrink:0; position:relative; }
+  /* солнце */
+  .w-sun { width:15px; height:15px; background:linear-gradient(135deg,#ffd93d,#ff9f0a); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 0 8px rgba(255,159,10,.5); }
+  .w-sun::before { content:""; position:absolute; inset:-6px; border-radius:50%; background:conic-gradient(from 0deg, transparent 0deg 20deg, rgba(255,180,20,.6) 20deg 25deg, transparent 25deg 65deg, rgba(255,180,20,.6) 65deg 70deg, transparent 70deg 110deg, rgba(255,180,20,.6) 110deg 115deg, transparent 115deg 155deg, rgba(255,180,20,.6) 155deg 160deg, transparent 160deg 200deg, rgba(255,180,20,.6) 200deg 205deg, transparent 205deg 245deg, rgba(255,180,20,.6) 245deg 250deg, transparent 250deg 290deg, rgba(255,180,20,.6) 290deg 295deg, transparent 295deg 335deg, rgba(255,180,20,.6) 335deg 340deg, transparent 340deg); -webkit-mask:radial-gradient(circle, transparent 8px, #000 9px); mask:radial-gradient(circle, transparent 8px, #000 9px); animation:wSpin 9s linear infinite; }
+  @keyframes wSpin { to { transform:rotate(360deg); } }
+  /* облако */
+  .w-cloud { width:20px; height:12px; background:#c8d0dd; border-radius:8px; position:absolute; top:9px; left:3px; animation:wFloat 3s ease-in-out infinite; }
+  .w-cloud::before { content:""; position:absolute; width:9px; height:9px; background:#c8d0dd; border-radius:50%; top:-4px; left:3px; }
+  .w-cloud::after { content:""; position:absolute; width:12px; height:12px; background:#c8d0dd; border-radius:50%; top:-6px; left:8px; }
+  @keyframes wFloat { 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(2px); } }
+  /* дождь */
+  .w-rain::after { content:""; position:absolute; width:2px; height:5px; background:#4a86c4; border-radius:2px; bottom:2px; left:11px; box-shadow:-5px 0 #4a86c4, 5px -1px #4a86c4; animation:wRain .8s linear infinite; }
+  @keyframes wRain { 0%{ transform:translateY(-3px); opacity:0; } 40%{ opacity:1; } 100%{ transform:translateY(4px); opacity:0; } }
+  /* снег */
+  .w-snow::after { content:"❄"; position:absolute; font-size:8px; color:#a8c8e8; bottom:1px; left:9px; animation:wSnow 1.5s linear infinite; }
+  @keyframes wSnow { 0%{ transform:translateY(-3px); opacity:0; } 40%{ opacity:1; } 100%{ transform:translateY(5px); opacity:0; } }
   /* --- SVG icon system --- */
   /* скелетон-загрузка */
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
@@ -1022,7 +1044,7 @@
   <header>
     <div class="title-row">
       <div class="basket"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14l-1.2 9a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7z"/><path d="M9 10 12 3l3 7"/><path d="M3 10h18"/></svg></div>
-      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v15</span></h1></div>
+      <div style="flex:1"><h1>My Business <span style="font-size:11px;color:var(--accent);font-weight:800;vertical-align:middle">v16</span></h1></div>
       <div class="sync-badge" id="syncBadge" title="Синхронизация"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.6A4 4 0 0 0 6.5 19z"/></svg></div>
     </div>
   </header>
@@ -1040,6 +1062,7 @@
     <div class="home-greet">
       <div class="home-date" id="homeDate"></div>
       <div class="home-hi" id="homeHi">Салом!</div>
+      <div class="weather" id="weather"></div>
     </div>
     <div class="total-card home-hero" id="homeHeroCard">
       <div class="total-label" data-ru="Прибыль за месяц">Прибыль за месяц</div>
@@ -3323,6 +3346,46 @@
     else { b.textContent=''; b.classList.remove('show'); }
   }
   window.addEventListener('resize',moveNavPill);
+  // ===== Погода (Open-Meteo, бесплатно без ключа) =====
+  const WCODE={ // код погоды → {иконка-класс, текст}
+    0:['sun','Ясно'],1:['sun','Ясно'],2:['cloud','Облачно'],3:['cloud','Пасмурно'],
+    45:['cloud','Туман'],48:['cloud','Туман'],
+    51:['rain','Морось'],53:['rain','Морось'],55:['rain','Морось'],
+    61:['rain','Дождь'],63:['rain','Дождь'],65:['rain','Ливень'],
+    71:['snow','Снег'],73:['snow','Снег'],75:['snow','Снег'],
+    80:['rain','Дождь'],81:['rain','Ливень'],82:['rain','Ливень'],
+    95:['rain','Гроза'],96:['rain','Гроза'],99:['rain','Гроза']
+  };
+  function wIcon(cls){
+    if(cls==='sun')return '<div class="w-sun"></div>';
+    if(cls==='cloud')return '<div class="w-cloud"></div>';
+    if(cls==='rain')return '<div class="w-cloud"></div><div class="w-rain"></div>';
+    if(cls==='snow')return '<div class="w-cloud"></div><div class="w-snow"></div>';
+    return '<div class="w-cloud"></div>';
+  }
+  async function loadWeather(lat, lon, cityName){
+    try{
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);
+      const d=await r.json();
+      const t=Math.round(d.current.temperature_2m);
+      const code=d.current.weather_code;
+      const [cls,txt]=WCODE[code]||['cloud','—'];
+      const el=$('weather'); if(!el)return;
+      el.innerHTML=`<div class="w-ic">${wIcon(cls)}</div><span class="w-temp">${t>0?'+':''}${t}°</span><span class="w-sep">·</span><span>${txt}</span>${cityName?`<span class="w-city">${cityName}</span>`:''}`;
+      requestAnimationFrame(()=>el.classList.add('show'));
+    }catch(e){}
+  }
+  function initWeather(){
+    // пробуем геолокацию, иначе Ташкент
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        pos=>loadWeather(pos.coords.latitude, pos.coords.longitude, ''),
+        ()=>loadWeather(41.31, 69.24, 'Ташкент'),
+        {timeout:5000, maximumAge:1800000}
+      );
+    } else loadWeather(41.31, 69.24, 'Ташкент');
+  }
+
   // ===== AI-инсайты (умный анализ на правилах) =====
   const AI_IC={
     up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>',
@@ -3690,6 +3753,7 @@
   renderBuy(); renderCat(); renderHist(); renderHome();
   applyLang();
   requestAnimationFrame(()=>{ moveNavPill(); updateNavBadges(); animatePanel('Home'); });
+  initWeather();
   enableSwipe('debtList',(id)=>{
     modal('Удалить долг?','Запись будет удалена.','Удалить',
       ()=>{ debts=debts.filter(x=>x.id!==id); saveDebts(); renderDebt(); },
